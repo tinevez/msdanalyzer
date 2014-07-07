@@ -1,0 +1,565 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Impact of tracking and localization error.</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-06-11"><meta name="DC.source" content="MSDTuto_error.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Impact of tracking and localization error.</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">Simulating localization errors.</a></li><li><a href="#4">MSD analysis with localization error.</a></li><li><a href="#8">Estimating the localization error magnitude.</a></li><li><a href="#10">More realistic tracks.</a></li><li><a href="#11">Simulation parameters</a></li><li><a href="#12">Tracks generation</a></li><li><a href="#13">How the tracks look like</a></li><li><a href="#14">Basic MSD analysis.</a></li></ul></div><p>Unless you have a very bright signal and are extremely cautious during image acquisition and image analysis, localization and tracking errors will affect the analysis. We propose in this chapter to reproduce with numerical simulations some results properly derived in Xavier Michalet article [4].</p><p>We will first introduce large localization error in detections (a single particle detected in one frame). The X,Y coordinates reported by the detector is off by a certain amount, gaussian distributed. We will see how it impacts the MSD curves. Then we will add other kind of tracking mistakes, such as missing particles and bad linking.</p><pre class="codeinput">close <span class="string">all</span>
+clear <span class="string">all</span>
+</pre><h2>Simulating localization errors.<a name="2"></a></h2><p>We now assume that particles detected have a bad localization: their XY position is wrong by a certain offset.</p><pre class="codeinput"><span class="comment">% Typical bad localization error. Large compared to typical displacement.</span>
+BAD_XY_TYPICAL_OFFSET = 0.2; <span class="comment">% &micro;m</span>
+</pre><p>Here is how we build the tracks, taking from the previous example.</p><pre class="codeinput">SPACE_UNITS = <span class="string">'&micro;m'</span>;
+TIME_UNITS = <span class="string">'s'</span>;
+N_PARTICLES = 100;
+N_TIME_STEPS = 500;
+N_DIM = 2; <span class="comment">% 2D</span>
+D  = 1e-3; <span class="comment">% &micro;m^2/s - diffusion coefficient</span>
+dT = 0.2; <span class="comment">% s,</span>
+SIZE = 8; <span class="comment">% &micro;m</span>
+
+k = sqrt(N_DIM * D * dT);
+tracks = cell(N_PARTICLES, 1);
+
+<span class="keyword">for</span> i_spot = 1 : N_PARTICLES
+
+    <span class="comment">% Time</span>
+    time = (0 : N_TIME_STEPS-1)' * dT;
+
+    <span class="comment">% Initial position</span>
+    X0 = SIZE .* rand(1, N_DIM);
+
+    <span class="comment">% Integrate uncorrelated displacement</span>
+    dX = k * randn(N_TIME_STEPS, N_DIM);
+    dX(1, :) = X0;
+    X = cumsum(dX, 1);
+
+    <span class="comment">% Deal with incorrect detection</span>
+    bad_dx = BAD_XY_TYPICAL_OFFSET * randn(N_TIME_STEPS, N_DIM);
+    X = X + bad_dx;
+
+    <span class="comment">% Store</span>
+    tracks{i_spot} = [ time X];
+
+<span class="keyword">end</span>
+
+fprintf(<span class="string">'Generated %d tracks over %d time steps.\n'</span>, N_PARTICLES, N_TIME_STEPS)
+</pre><pre class="codeoutput">Generated 100 tracks over 500 time steps.
+</pre><h2>MSD analysis with localization error.<a name="4"></a></h2><p>Let's see how our analysis holds against this threat:</p><pre class="codeinput">ma = msdanalyzer(2, SPACE_UNITS, TIME_UNITS);
+ma = ma.addAll(tracks);
+ma = ma.computeMSD;
+ma.plotMeanMSD(gca, true);
+</pre><pre class="codeoutput">Computing MSD of 100 tracks... Done.
+</pre><img vspace="5" hspace="5" src="MSDTuto_error_01.png" alt=""> <p>We see that on average, the MSD curve is still a straight line, but that it has a large offset at <tt>dt=0</tt>, <tt>dt</tt> being the delay between two position measurements. Luckily, this is the only impact of localization error on the MSD curve: it just offsets the it by a certain amount.</p><p>It is important therefore that the analysis of MSD curves <b>ignores</b> the point at <tt>dt=0</tt>, and that we do a linear fit with an offset <tt>MSD = a &times; dt + b</tt>:</p><pre class="codeinput">ma = ma.fitMSD;
+
+good_enough_fit = ma.lfit.r2fit &gt; 0.8;
+Dmean = mean( ma.lfit.a(good_enough_fit) ) / 2 / ma.n_dim;
+Dstd  =  std( ma.lfit.a(good_enough_fit) ) / 2 / ma.n_dim;
+
+fprintf(<span class="string">'Found D = %.3e &plusmn; %.3e (mean &plusmn; std, N = %d)\n'</span>, <span class="keyword">...</span>
+    Dmean, Dstd, sum(good_enough_fit));
+</pre><pre class="codeoutput">Fitting 100 curves of MSD = f(t), taking only the first 25% of each curve... Done.
+Found D = 1.109e-03 &plusmn; 4.620e-04 (mean &plusmn; std, N = 83)
+</pre><p>So this is what our analyzer does. The localization error does not impact the slope measurement, and the value we derive for the diffusion coefficient is correct.</p><p>It is actually amazing that we can still derive a good estimate for the diffusion coefficient with that error magnitude. The mean displacement caused by the physical process of diffusion is given by <tt>k</tt>, calculated above. The localization error we simulated is:</p><pre class="codeinput">fprintf(<span class="string">'Simulated localization error magnitude: %.3e %s.\n'</span>, <span class="keyword">...</span>
+    BAD_XY_TYPICAL_OFFSET, SPACE_UNITS);
+fprintf(<span class="string">'Typical brownian displacement magnitude: %.3e %s.\n'</span>, <span class="keyword">...</span>
+    k, SPACE_UNITS);
+</pre><pre class="codeoutput">Simulated localization error magnitude: 2.000e-01 &micro;m.
+Typical brownian displacement magnitude: 2.000e-02 &micro;m.
+</pre><p>For a larger localization error, the estimate of <tt>D</tt> degrades. Try for instance to make the Brownian movement smaller by setting the time interval to 50 ms, and you will get an estimate of <tt>D</tt> biased towards to high values.</p><h2>Estimating the localization error magnitude.<a name="8"></a></h2><p>Xavier Michalet and others noticed that the offset <tt>b</tt> could be used to estimate the localization error magnitude. In [4], he reports that the dynamic localization uncertainty is given by (see equations 12 and 14 in [4]):</p><p><img src="MSDTuto_error_eq08833.png" alt="$$ \sigma = \frac{1}{2} \sqrt{b} $$"></p><p>If we apply it to our fits, we get:</p><pre class="codeinput">bmean = mean( ma.lfit.b(good_enough_fit) );
+sigma_locmean = 0.5 * sqrt(bmean);
+
+<span class="comment">% Standard deviation derived by variance composition</span>
+sigma_sigma_locmean = 0.5 * std( ma.lfit.b(good_enough_fit) ) / sigma_locmean;
+
+fprintf(<span class="string">'Localization error estimated to be s = %.3e &plusmn; %.3e (mean &plusmn; std, N = %d),\n'</span>, <span class="keyword">...</span>
+    sigma_locmean, sigma_sigma_locmean, sum(good_enough_fit));
+fprintf(<span class="string">'to compare to the simulated value: %.3e.\n'</span>, BAD_XY_TYPICAL_OFFSET);
+</pre><pre class="codeoutput">Localization error estimated to be s = 1.988e-01 &plusmn; 2.817e-02 (mean &plusmn; std, N = 83),
+to compare to the simulated value: 2.000e-01.
+</pre><p>In practice however, the localization error has various experimental sources. In particular, Xavier Michalet notes that including a camera finite exposure time as a source of localization error (you image the particle as it moves) can yield negative offset, which renders our estimation clueless.</p><h2>More realistic tracks.<a name="10"></a></h2><p>Let us simulate more tracks, introducing some tweaks that make them more resembling to experimentally measured tracks:</p><div><ul><li>they don't start at the same time and don't last for the same duration. Obviously, this should not affect the results if the analyzer is well written;</li><li>they have some gaps: some detections are missing for some frames. Again, this should not impact the mean value of the diffusion coefficient, but merely change the confidence interval for the short delays;</li><li>the detector fails sometimes: some of the particles are incorrectly localized: the measured XY position as an offset which does not correspond to reality. This is what we just simulated above, except that only a proportion of detections are affected;</li><li>the tracker fails sometimes: he links together in a same track two different particles that are close. The tracks might jump from one particle to another, generating fallacious displacements.</li></ul></div><h2>Simulation parameters<a name="11"></a></h2><pre class="codeinput">close <span class="string">all</span>
+clear <span class="string">all</span>
+
+<span class="comment">% Number of particles to simulate</span>
+N_PARTICLES = 100;
+
+<span class="comment">% Probability to miss a detection.</span>
+P_GAPS = 0.3;
+
+<span class="comment">% Probability that a XY position is incorrect.</span>
+P_BAD_XY = 0.2;
+
+<span class="comment">% Typical bad localization error.</span>
+BAD_XY_TYPICAL_OFFSET = 0.2; <span class="comment">% &micro;m</span>
+
+<span class="comment">% Probability that a track actually follows two particles.</span>
+P_BAD_TRACK = 0.2;
+
+<span class="comment">% Typical distance between the 2 particles erroneously tracked together</span>
+BAD_TRACK_DISTANCE = 0.5; <span class="comment">%</span>
+
+N_TIME_STEPS = 500;
+N_DIM = 2; <span class="comment">% 2D</span>
+
+kT = 4.2821e-21; <span class="comment">% 37&ordm;C</span>
+D  = 1e-3; <span class="comment">% &micro;m^2/s</span>
+dT = 0.2; <span class="comment">% s</span>
+
+SIZE = 10; <span class="comment">% &micro;m</span>
+</pre><h2>Tracks generation<a name="12"></a></h2><pre class="codeinput">tracks = cell(N_PARTICLES, 1);
+
+k = sqrt(N_DIM * D * dT);
+
+n_missed = 0;
+n_bad_xy = 0;
+n_bad_track = 0;
+
+<span class="keyword">for</span> i_spot = 1 : N_PARTICLES
+
+    <span class="comment">% Time</span>
+    time_steps = max(1, round(N_TIME_STEPS + N_TIME_STEPS/4*randn));
+    time = (0 : time_steps-1)' * dT + dT * floor(N_TIME_STEPS / 4  * rand);
+
+
+    <span class="comment">% Initial position</span>
+    X0 = SIZE .* rand(1, N_DIM);
+
+    <span class="comment">% Integrate uncorrelated displacement</span>
+    dX = k * randn(time_steps, N_DIM);
+    dX(1, :) = X0;
+    X = cumsum(dX, 1);
+
+    <span class="comment">% First deal with incorrect detection</span>
+
+    incorrect_detection = rand(time_steps, 1) &lt; P_BAD_XY;
+    n_incorrect_detection = sum(incorrect_detection);
+    bad_dx = BAD_XY_TYPICAL_OFFSET * randn(n_incorrect_detection, N_DIM);
+    X(incorrect_detection, :) = X(incorrect_detection, :) + bad_dx;
+
+    n_bad_xy = n_bad_xy + n_incorrect_detection;
+
+
+    <span class="comment">% Deal with two particle confused as one track.</span>
+
+    bad_track = rand &lt; P_BAD_TRACK;
+    <span class="keyword">if</span> bad_track
+        <span class="comment">% It is a bad track. So at a random time, all the X coordinates</span>
+        <span class="comment">% will actually follow another particle, which is off by a certain</span>
+        <span class="comment">% distance:</span>
+        switch_time = 1 + floor(rand * (time_steps-1));
+        dx_other_particle = BAD_TRACK_DISTANCE * randn(1, N_DIM);
+        dx_other_particle = repmat(dx_other_particle, [(time_steps-switch_time+1) 1]);
+        X(switch_time:end, :) = X(switch_time:end, :) + dx_other_particle;
+
+        n_bad_track = n_bad_track + 1;
+    <span class="keyword">end</span>
+
+    <span class="comment">% Deal with missing frames</span>
+
+    missing_frames = rand(time_steps, 1) &lt; P_GAPS;
+    X(missing_frames, :) = [];
+    time(missing_frames) = [];
+
+    n_missed = n_missed + sum(missing_frames);
+
+
+    <span class="comment">% Store</span>
+    tracks{i_spot} = [ time X];
+
+<span class="keyword">end</span>
+
+fprintf(<span class="string">'Generated %d tracks, with:\n'</span>, N_PARTICLES)
+fprintf(<span class="string">' - %d missed detections\n'</span>, n_missed)
+fprintf(<span class="string">' - %d bad detections\n'</span>, n_bad_xy)
+fprintf(<span class="string">' - %d bad tracks\n'</span>, n_bad_track)
+</pre><pre class="codeoutput">Generated 100 tracks, with:
+ - 15424 missed detections
+ - 10388 bad detections
+ - 25 bad tracks
+</pre><h2>How the tracks look like<a name="13"></a></h2><p>Let's use <tt>@msdanalyzer</tt> to quickly see how the simulated trajectories look like:</p><pre class="codeinput">ma = msdanalyzer(2, <span class="string">'&micro;m'</span>, <span class="string">'s'</span>);
+ma = ma.addAll(tracks);
+ma.plotTracks;
+ma.labelPlotTracks;
+</pre><img vspace="5" hspace="5" src="MSDTuto_error_02.png" alt=""> <h2>Basic MSD analysis.<a name="14"></a></h2><p>Even with the mess caused by 100 particles, we clearly see that some trajectories have some pathological behavior. The localization error magnitude is 10 times the Brownian displacement magniture, and the tracking error put together tracks that are awat by roughly 25 times the typical displacement.</p><p>We shall not expect to find the same accuracy in our estimates. In paricular, the MSD curves should be biased towards higher slopes because of the bad tracks. Switching from one particle to another induces erroneously large displacements that will contribute to large slopes.</p><p>Indeed, if we repeat the analysis we did on the previous page, we still retrieve the correct order of magnitude, but the estimated value of <tt>D</tt> departs from the simulated one:</p><pre class="codeinput">ma = ma.computeMSD;
+figure
+ma.plotMeanMSD(gca, true)
+ma = ma.fitMSD;
+
+good_enough_fit = ma.lfit.r2fit &gt; 0.8;
+Dmean = mean( ma.lfit.a(good_enough_fit) ) / 2 / ma.n_dim;
+Dstd  =  std( ma.lfit.a(good_enough_fit) ) / 2 / ma.n_dim;
+
+fprintf(<span class="string">'Found D = %.3e &plusmn; %.3e (mean &plusmn; std, N = %d)\n'</span>, <span class="keyword">...</span>
+    Dmean, Dstd, sum(good_enough_fit));
+</pre><pre class="codeoutput">Computing MSD of 100 tracks... Done.
+Fitting 100 curves of MSD = f(t), taking only the first 25% of each curve... Done.
+Found D = 1.525e-03 &plusmn; 1.398e-03 (mean &plusmn; std, N = 81)
+</pre><img vspace="5" hspace="5" src="MSDTuto_error_03.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Impact of tracking and localization error.
+%
+
+%%
+% Unless you have a very bright signal and are extremely cautious during
+% image acquisition and image analysis, localization and tracking errors
+% will affect the analysis. We propose in this chapter to reproduce with
+% numerical simulations some results properly derived in Xavier Michalet
+% article [4].
+%
+% We will first introduce large localization error in detections (a single
+% particle detected in one frame). The X,Y coordinates reported by the
+% detector is off by a certain amount, gaussian distributed. We will see
+% how it impacts the MSD curves. Then we will add other kind of tracking
+% mistakes, such as missing particles and bad linking.
+
+close all
+clear all
+
+%% Simulating localization errors.
+%
+% We now assume that particles detected have a bad localization: their XY
+% position is wrong by a certain offset.
+
+% Typical bad localization error. Large compared to typical displacement.
+BAD_XY_TYPICAL_OFFSET = 0.2; % µm
+
+%%
+% Here is how we build the tracks, taking from the previous example.
+
+SPACE_UNITS = 'µm';
+TIME_UNITS = 's';
+N_PARTICLES = 100;
+N_TIME_STEPS = 500;
+N_DIM = 2; % 2D
+D  = 1e-3; % µm^2/s - diffusion coefficient
+dT = 0.2; % s,
+SIZE = 8; % µm
+
+k = sqrt(N_DIM * D * dT);
+tracks = cell(N_PARTICLES, 1);
+
+for i_spot = 1 : N_PARTICLES
+    
+    % Time
+    time = (0 : N_TIME_STEPS-1)' * dT;
+    
+    % Initial position
+    X0 = SIZE .* rand(1, N_DIM);
+    
+    % Integrate uncorrelated displacement
+    dX = k * randn(N_TIME_STEPS, N_DIM);
+    dX(1, :) = X0;
+    X = cumsum(dX, 1);
+    
+    % Deal with incorrect detection
+    bad_dx = BAD_XY_TYPICAL_OFFSET * randn(N_TIME_STEPS, N_DIM); 
+    X = X + bad_dx;
+        
+    % Store
+    tracks{i_spot} = [ time X];
+    
+end
+
+fprintf('Generated %d tracks over %d time steps.\n', N_PARTICLES, N_TIME_STEPS)
+
+%% MSD analysis with localization error.
+%
+% Let's see how our analysis holds against this threat:
+
+ma = msdanalyzer(2, SPACE_UNITS, TIME_UNITS);
+ma = ma.addAll(tracks);
+ma = ma.computeMSD;
+ma.plotMeanMSD(gca, true);
+
+%%
+% We see that on average, the MSD curve is still a straight line, but that
+% it has a large offset at |dt=0|, |dt| being the delay between two
+% position measurements. Luckily, this is the only impact of localization
+% error on the MSD curve: it just offsets the it by a certain amount.
+%
+% It is important therefore that the analysis of MSD curves *ignores* the
+% point at |dt=0|, and that we do a linear fit with an offset 
+% |MSD = a × dt + b|:
+
+ma = ma.fitMSD;
+
+good_enough_fit = ma.lfit.r2fit > 0.8;
+Dmean = mean( ma.lfit.a(good_enough_fit) ) / 2 / ma.n_dim;
+Dstd  =  std( ma.lfit.a(good_enough_fit) ) / 2 / ma.n_dim;
+
+fprintf('Found D = %.3e ± %.3e (mean ± std, N = %d)\n', ...
+    Dmean, Dstd, sum(good_enough_fit));
+
+%% 
+% So this is what our analyzer does. The localization error does not impact
+% the slope measurement, and the value we derive for the diffusion
+% coefficient is correct.
+%
+% It is actually amazing that we can still derive a good estimate for the
+% diffusion coefficient with that error magnitude. The mean displacement
+% caused by the physical process of diffusion is given by |k|, calculated
+% above. The localization error we simulated is:
+
+fprintf('Simulated localization error magnitude: %.3e %s.\n', ...
+    BAD_XY_TYPICAL_OFFSET, SPACE_UNITS);
+fprintf('Typical brownian displacement magnitude: %.3e %s.\n', ...
+    k, SPACE_UNITS);
+
+%%
+% For a larger localization error, the estimate of |D| degrades. Try for
+% instance to make the Brownian movement smaller by setting the time
+% interval to 50 ms, and you will get an estimate of |D| biased towards to
+% high values.
+
+%% Estimating the localization error magnitude.
+%
+% Xavier Michalet and others noticed that the offset |b| could be used to
+% estimate the localization error magnitude. In [4], he reports that the
+% dynamic localization uncertainty is given by (see equations 12 and 14 in
+% [4]):
+%
+% $$ \sigma = \frac{1}{2} \sqrt{b} $$
+%
+% If we apply it to our fits, we get:
+
+bmean = mean( ma.lfit.b(good_enough_fit) );
+sigma_locmean = 0.5 * sqrt(bmean);
+
+% Standard deviation derived by variance composition
+sigma_sigma_locmean = 0.5 * std( ma.lfit.b(good_enough_fit) ) / sigma_locmean;
+
+fprintf('Localization error estimated to be s = %.3e ± %.3e (mean ± std, N = %d),\n', ...
+    sigma_locmean, sigma_sigma_locmean, sum(good_enough_fit));
+fprintf('to compare to the simulated value: %.3e.\n', BAD_XY_TYPICAL_OFFSET);
+
+%% 
+% In practice however, the localization error has various experimental
+% sources. In particular, Xavier Michalet notes that including a camera
+% finite exposure time as a source of localization error (you image the
+% particle as it moves) can yield negative offset, which renders our
+% estimation clueless.
+
+
+%% More realistic tracks.
+%
+% Let us simulate more tracks, introducing some tweaks that make them more
+% resembling to experimentally measured tracks:
+%
+% * they don't start at the same time and don't last for the same duration.
+% Obviously, this should not affect the results if the analyzer is well
+% written;
+% * they have some gaps: some detections are missing for some frames.
+% Again, this should not impact the mean value of the diffusion
+% coefficient, but merely change the confidence interval for the short
+% delays;
+% * the detector fails sometimes: some of the particles are incorrectly
+% localized: the measured XY position as an offset which does not
+% correspond to reality. This is what we just simulated above, except that
+% only a proportion of detections are affected;
+% * the tracker fails sometimes: he links together in a same track two
+% different particles that are close. The tracks might jump from one
+% particle to another, generating fallacious displacements.
+
+%% Simulation parameters
+
+close all
+clear all
+
+% Number of particles to simulate
+N_PARTICLES = 100;
+
+% Probability to miss a detection.
+P_GAPS = 0.3; 
+
+% Probability that a XY position is incorrect.
+P_BAD_XY = 0.2; 
+
+% Typical bad localization error.
+BAD_XY_TYPICAL_OFFSET = 0.2; % µm
+
+% Probability that a track actually follows two particles.
+P_BAD_TRACK = 0.2;
+
+% Typical distance between the 2 particles erroneously tracked together
+BAD_TRACK_DISTANCE = 0.5; %
+
+N_TIME_STEPS = 500;
+N_DIM = 2; % 2D
+
+kT = 4.2821e-21; % 37ºC
+D  = 1e-3; % µm^2/s
+dT = 0.2; % s
+
+SIZE = 10; % µm
+
+%% Tracks generation
+
+tracks = cell(N_PARTICLES, 1);
+
+k = sqrt(N_DIM * D * dT);
+
+n_missed = 0;
+n_bad_xy = 0;
+n_bad_track = 0;
+
+for i_spot = 1 : N_PARTICLES
+    
+    % Time
+    time_steps = max(1, round(N_TIME_STEPS + N_TIME_STEPS/4*randn));
+    time = (0 : time_steps-1)' * dT + dT * floor(N_TIME_STEPS / 4  * rand);
+    
+    
+    % Initial position
+    X0 = SIZE .* rand(1, N_DIM);
+    
+    % Integrate uncorrelated displacement
+    dX = k * randn(time_steps, N_DIM);
+    dX(1, :) = X0;
+    X = cumsum(dX, 1);
+    
+    % First deal with incorrect detection
+    
+    incorrect_detection = rand(time_steps, 1) < P_BAD_XY;
+    n_incorrect_detection = sum(incorrect_detection);
+    bad_dx = BAD_XY_TYPICAL_OFFSET * randn(n_incorrect_detection, N_DIM); 
+    X(incorrect_detection, :) = X(incorrect_detection, :) + bad_dx;
+
+    n_bad_xy = n_bad_xy + n_incorrect_detection;
+
+      
+    % Deal with two particle confused as one track.
+    
+    bad_track = rand < P_BAD_TRACK;
+    if bad_track
+        % It is a bad track. So at a random time, all the X coordinates
+        % will actually follow another particle, which is off by a certain
+        % distance:
+        switch_time = 1 + floor(rand * (time_steps-1));
+        dx_other_particle = BAD_TRACK_DISTANCE * randn(1, N_DIM);
+        dx_other_particle = repmat(dx_other_particle, [(time_steps-switch_time+1) 1]);
+        X(switch_time:end, :) = X(switch_time:end, :) + dx_other_particle;
+        
+        n_bad_track = n_bad_track + 1;
+    end
+    
+    % Deal with missing frames
+    
+    missing_frames = rand(time_steps, 1) < P_GAPS;
+    X(missing_frames, :) = [];
+    time(missing_frames) = [];
+    
+    n_missed = n_missed + sum(missing_frames);
+  
+        
+    % Store
+    tracks{i_spot} = [ time X];
+    
+end
+
+fprintf('Generated %d tracks, with:\n', N_PARTICLES)
+fprintf(' - %d missed detections\n', n_missed)
+fprintf(' - %d bad detections\n', n_bad_xy)
+fprintf(' - %d bad tracks\n', n_bad_track)
+
+%% How the tracks look like
+% Let's use |@msdanalyzer| to quickly see how the simulated trajectories
+% look like:
+
+ma = msdanalyzer(2, 'µm', 's');
+ma = ma.addAll(tracks);
+ma.plotTracks;
+ma.labelPlotTracks;
+
+%% Basic MSD analysis.
+%
+% Even with the mess caused by 100 particles, we clearly see that some
+% trajectories have some pathological behavior. The localization error
+% magnitude is 10 times the Brownian displacement magniture, and the
+% tracking error put together tracks that are awat by roughly 25 times the
+% typical displacement. 
+%
+% We shall not expect to find the same accuracy in our estimates. In
+% paricular, the MSD curves should be biased towards higher slopes because
+% of the bad tracks. Switching from one particle to another induces
+% erroneously large displacements that will contribute to large slopes.
+% 
+% Indeed, if we repeat the analysis we did on the previous page,
+% we still retrieve the correct order of magnitude, but the estimated value
+% of |D| departs from the simulated one:
+
+ma = ma.computeMSD;
+figure
+ma.plotMeanMSD(gca, true)
+ma = ma.fitMSD;
+
+good_enough_fit = ma.lfit.r2fit > 0.8;
+Dmean = mean( ma.lfit.a(good_enough_fit) ) / 2 / ma.n_dim;
+Dstd  =  std( ma.lfit.a(good_enough_fit) ) / 2 / ma.n_dim;
+
+fprintf('Found D = %.3e ± %.3e (mean ± std, N = %d)\n', ...
+    Dmean, Dstd, sum(good_enough_fit));
+
+
+##### SOURCE END #####
+--></body></html>

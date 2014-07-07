@@ -1,0 +1,345 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Directed motion.</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-06-11"><meta name="DC.source" content="MSDTuto_directed.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Directed motion.</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">Simulation parameters.</a></li><li><a href="#3">Trajectories generation.</a></li><li><a href="#4">MSD analysis.</a></li><li><a href="#8">Velocity auto-correlation.</a></li></ul></div><p>MSD analysis can also be used to discriminate between several movement type. For instance, suppose that you are studying a protein in a cell. You would like to know whether it is actively transported, <i>e.g.</i> by vesicles or molecular motors, or if it is unbound and free to diffuse. Candidate functions for the protein completely differ according to the found motion.</p><p>We will simulate here the motion of particles that are actively transported. That is: on top of the Brownian, random movement, they have an extra displacement correlated over long time. This is meant to simulate transport. The direction and mean speed of this movement will vary for each particle. Also for each particle, the instantaneous velocity and its direction will fluctuate because of Brownian motion. We will then try to derive back the ensemble mean velocity of the set of particles.</p><pre class="codeinput">close <span class="string">all</span>
+clear <span class="string">all</span>
+</pre><h2>Simulation parameters.<a name="2"></a></h2><pre class="codeinput">SPACE_UNITS = <span class="string">'&micro;m'</span>;
+TIME_UNITS = <span class="string">'s'</span>;
+
+N_PARTICLES = 20;
+N_TIME_STEPS = 200;
+
+<span class="comment">% Diffusion coefficient. Will set the amplitude of the random displacement</span>
+D  = 1e-3; <span class="comment">% &micro;m^2/s</span>
+<span class="comment">% Time step between acquisition; fast acquisition!</span>
+dT = 0.05; <span class="comment">% s,</span>
+
+<span class="comment">% Mean velocity</span>
+vm = 0.05; <span class="comment">% &micro;m/s</span>
+
+<span class="comment">% Area size, just used to disperse particles in 2D. Has no impact on</span>
+<span class="comment">% analysis.</span>
+SIZE = 2; <span class="comment">% &micro;m</span>
+</pre><h2>Trajectories generation.<a name="3"></a></h2><pre class="codeinput">tracks = cell(N_PARTICLES, 1);
+
+k = sqrt(2 * D * dT);
+<span class="keyword">for</span> i = 1 : N_PARTICLES
+
+    <span class="comment">% Time</span>
+    time = (0 : N_TIME_STEPS-1)' * dT;
+
+    <span class="comment">% Velocity orientation</span>
+    theta = 2 * pi * rand;
+
+    <span class="comment">% Mean velocity</span>
+    v = vm * (1 + 1/4*randn);
+
+    <span class="comment">% Initial position</span>
+    X0 = SIZE .* rand(1, 2);
+
+    <span class="comment">% Instantaneous displacement:</span>
+    dX_brownian = k * randn(N_TIME_STEPS, 2);
+    dX_directed = v * dT * <span class="keyword">...</span>
+        [ cos(theta)*ones(N_TIME_STEPS,1) sin(theta)*ones(N_TIME_STEPS,1) ];
+
+    <span class="comment">% Integrate uncorrelated displacement</span>
+    dX = dX_brownian + dX_directed;
+    dX(1, :) = X0;
+    X = cumsum(dX, 1);
+
+    <span class="comment">% Store</span>
+    tracks{i} = [time X];
+
+<span class="keyword">end</span>
+clear <span class="string">i</span> <span class="string">X</span> <span class="string">dX</span> <span class="string">time</span> <span class="string">X0</span>
+</pre><h2>MSD analysis.<a name="4"></a></h2><p>Let's see how the simulated trajectories look like:</p><pre class="codeinput">ma = msdanalyzer(2, SPACE_UNITS, TIME_UNITS);
+ma = ma.addAll(tracks);
+ma.plotTracks
+ma.labelPlotTracks
+</pre><img vspace="5" hspace="5" src="MSDTuto_directed_01.png" alt=""> <p>The transported behavior is rather obvious, even on this short time. Here is what the average MSD curve look like:</p><pre class="codeinput">ma = ma.computeMSD;
+figure
+ma.plotMeanMSD(gca, true);
+</pre><pre class="codeoutput">Computing MSD of 20 tracks... Done.
+</pre><img vspace="5" hspace="5" src="MSDTuto_directed_02.png" alt=""> <p>Obviously, the MSD curve does not look like a straight line anymore. It has a clear positive curvature, indicating that the excursion of the particle at long times exceed what it should be if it was purely diffusive.</p><p>Its analytical expression is detailed in Saxton paper [3]:</p><p><img src="MSDTuto_directed_eq44568.png" alt="$$ < r^2 &gt; = 2 d D t + v^2 t^2 $$"></p><p>so we should expect to see a parabola, with the directed motion behavior dominating for large delays. A fit of the average MSD curve by a polynomial <tt>msd = a x t + c x t&sup2;</tt> should therefore yield both the diffusion coefficient and the flow velocity. There is not automated method to do it in <tt>@msdanalyzer</tt>; we'll have to do it "by hand":</p><pre class="codeinput">A = ma.getMeanMSD;
+t = A(:, 1); <span class="comment">% delay vector</span>
+msd = A(:,2); <span class="comment">% msd</span>
+std_msd = A(:,3); <span class="comment">% we will use inverse of the std as weights for the fit</span>
+std_msd(1) = std_msd(2); <span class="comment">% avoid infinity weight</span>
+
+ft = fittype(<span class="string">'a*x + c*x^2'</span>);
+[fo, gof] = fit(t, msd, ft, <span class="string">'Weights'</span>, 1./std_msd, <span class="string">'StartPoint'</span>, [0 0]);
+
+hold <span class="string">on</span>
+plot(fo)
+legend <span class="string">off</span>
+ma.labelPlotMSD
+
+Dfit = fo.a / 4;
+Vfit = sqrt(fo.c);
+
+ci = confint(fo);
+Dci = ci(:,1) / 4;
+Vci = sqrt(ci(:,2));
+
+fprintf(<span class="string">'Parabolic fit of the average MSD curve with 95%% confidence interval:\n'</span>)
+
+fprintf(<span class="string">'D = %.3g [ %.3g - %.3g ] %s, real value was %.3g %s\n'</span>, <span class="keyword">...</span>
+    Dfit, Dci(1), Dci(2), [SPACE_UNITS <span class="string">'&sup2;/'</span> TIME_UNITS], D, [SPACE_UNITS <span class="string">'&sup2;/'</span> TIME_UNITS]);
+
+fprintf(<span class="string">'V = %.3g [ %.3g - %.3g ] %s, real value was %.3g %s\n'</span>, <span class="keyword">...</span>
+    Vfit, Vci(1), Vci(2), [SPACE_UNITS <span class="string">'/'</span> TIME_UNITS], vm, [SPACE_UNITS <span class="string">'/'</span> TIME_UNITS]);
+</pre><pre class="codeoutput">Parabolic fit of the average MSD curve with 95% confidence interval:
+D = 0.000968 [ 0.00095 - 0.000986 ] &micro;m&sup2;/s, real value was 0.001 &micro;m&sup2;/s
+V = 0.0688 [ 0.0687 - 0.0689 ] &micro;m/s, real value was 0.05 &micro;m/s
+</pre><img vspace="5" hspace="5" src="MSDTuto_directed_03.png" alt=""> <p>So the numerical estimates are reasonably good, regarding the low number of particles we have. For actual experiments, the situation might be less ideal. For large delays, the uncertainty might be so high that it will alter the values deduced from the fit. You might then want to limit the fit to only a portion of the average MSD curve, like we did before. But then, we have now a fit with two free variables (<tt>D</tt> and <tt>v</tt>), so it requires more data points to be robust. And anyway, if you want to have a good confidence on the transport mechanism, you want to sample the movement over long time.</p><p>As if these considerations were not enough, there is localization error that will change the fit function. As discussed later in this tutorial, such errors induce an offset of the average MSD curve, that you need to take into account in the fit. This adds another free variable, compromising the robustness of the fit even more.</p><h2>Velocity auto-correlation.<a name="8"></a></h2><p>Another way to discard the possibility a purely Brownian motion is to check the velocity auto-correlation:</p><pre class="codeinput">ma = ma.computeVCorr;
+figure
+ma.plotMeanVCorr
+</pre><pre class="codeoutput">Computing velocity autocorrelation of 20 tracks... Done.
+</pre><img vspace="5" hspace="5" src="MSDTuto_directed_04.png" alt=""> <p>Note that the auto-correlation seems to be above 0. This shows that on average, a displacement has more chance to be in the same direction over time.</p><p>Qian <i>et al.</i> [2] (equations 10 &amp; 11) mention that one could derive the direction motion velocity out the velocity analysis. However it fails in our case since each particle have a different motion vector: Their directed motion have the same mean speed, but not the same direction. So far, the fit of the MSD curve is the only way to derive the direction motion speed.</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Directed motion.
+%
+%%
+% MSD analysis can also be used to discriminate between several movement
+% type. For instance, suppose that you are studying a protein in a cell.
+% You would like to know whether it is actively transported, _e.g._ by
+% vesicles or molecular motors, or if it is unbound and free to diffuse.
+% Candidate functions for the protein completely differ according to the
+% found motion. 
+%
+% We will simulate here the motion of particles that are actively
+% transported. That is: on top of the Brownian, random movement, they have
+% an extra displacement correlated over long time. This is meant to
+% simulate transport. The direction and mean speed of this movement will
+% vary for each particle. Also for each particle, the instantaneous
+% velocity and its direction will fluctuate because of Brownian motion. We
+% will then try to derive back the ensemble mean velocity of the set of
+% particles.
+
+close all
+clear all
+
+%% Simulation parameters.
+
+SPACE_UNITS = 'µm';
+TIME_UNITS = 's';
+
+N_PARTICLES = 20;
+N_TIME_STEPS = 200;
+
+% Diffusion coefficient. Will set the amplitude of the random displacement
+D  = 1e-3; % µm^2/s
+% Time step between acquisition; fast acquisition!
+dT = 0.05; % s,
+
+% Mean velocity
+vm = 0.05; % µm/s
+
+% Area size, just used to disperse particles in 2D. Has no impact on
+% analysis.
+SIZE = 2; % µm
+
+%% Trajectories generation.
+
+tracks = cell(N_PARTICLES, 1);
+
+k = sqrt(2 * D * dT);
+for i = 1 : N_PARTICLES
+    
+    % Time
+    time = (0 : N_TIME_STEPS-1)' * dT;
+    
+    % Velocity orientation
+    theta = 2 * pi * rand;
+    
+    % Mean velocity
+    v = vm * (1 + 1/4*randn);
+    
+    % Initial position
+    X0 = SIZE .* rand(1, 2);
+    
+    % Instantaneous displacement:
+    dX_brownian = k * randn(N_TIME_STEPS, 2);
+    dX_directed = v * dT * ...
+        [ cos(theta)*ones(N_TIME_STEPS,1) sin(theta)*ones(N_TIME_STEPS,1) ];
+    
+    % Integrate uncorrelated displacement
+    dX = dX_brownian + dX_directed;
+    dX(1, :) = X0;
+    X = cumsum(dX, 1);
+    
+    % Store
+    tracks{i} = [time X];
+        
+end
+clear i X dX time X0
+
+%% MSD analysis.
+%
+% Let's see how the simulated trajectories look like:
+
+ma = msdanalyzer(2, SPACE_UNITS, TIME_UNITS);
+ma = ma.addAll(tracks);
+ma.plotTracks
+ma.labelPlotTracks
+
+%%
+% The transported behavior is rather obvious, even on this short time. Here
+% is what the average MSD curve look like:
+
+ma = ma.computeMSD;
+figure
+ma.plotMeanMSD(gca, true);
+
+%%
+% Obviously, the MSD curve does not look like a straight line anymore. It
+% has a clear positive curvature, indicating that the excursion of the
+% particle at long times exceed what it should be if it was purely
+% diffusive.
+%
+% Its analytical expression is detailed in Saxton paper [3]:
+%
+% $$ < r^2 > = 2 d D t + v^2 t^2 $$
+% 
+% so we should expect to see a parabola, with the directed motion
+% behavior dominating for large delays. A fit of the average MSD curve by a
+% polynomial |msd = a x t + c x t²| should therefore yield both the
+% diffusion coefficient and the flow velocity. There is not automated
+% method to do it in |@msdanalyzer|; we'll have to do it "by hand":
+
+A = ma.getMeanMSD;
+t = A(:, 1); % delay vector
+msd = A(:,2); % msd
+std_msd = A(:,3); % we will use inverse of the std as weights for the fit
+std_msd(1) = std_msd(2); % avoid infinity weight
+
+ft = fittype('a*x + c*x^2');
+[fo, gof] = fit(t, msd, ft, 'Weights', 1./std_msd, 'StartPoint', [0 0]);
+
+hold on
+plot(fo)
+legend off
+ma.labelPlotMSD
+
+Dfit = fo.a / 4;
+Vfit = sqrt(fo.c);
+
+ci = confint(fo);
+Dci = ci(:,1) / 4;
+Vci = sqrt(ci(:,2));
+
+fprintf('Parabolic fit of the average MSD curve with 95%% confidence interval:\n')
+
+fprintf('D = %.3g [ %.3g - %.3g ] %s, real value was %.3g %s\n', ...
+    Dfit, Dci(1), Dci(2), [SPACE_UNITS '²/' TIME_UNITS], D, [SPACE_UNITS '²/' TIME_UNITS]);
+
+fprintf('V = %.3g [ %.3g - %.3g ] %s, real value was %.3g %s\n', ...
+    Vfit, Vci(1), Vci(2), [SPACE_UNITS '/' TIME_UNITS], vm, [SPACE_UNITS '/' TIME_UNITS]);
+
+%%
+% So the numerical estimates are reasonably good, regarding the low number
+% of particles we have. For actual experiments, the situation might be less
+% ideal. For large delays, the uncertainty might be so high that it will
+% alter the values deduced from the fit. You might then want to limit the
+% fit to only a portion of the average MSD curve, like we did before. But
+% then, we have now a fit with two free variables (|D| and |v|), so it
+% requires more data points to be robust. And anyway, if you want to have a
+% good confidence on the transport mechanism, you want to sample the
+% movement over long time. 
+%
+% As if these considerations were not enough, there is localization error
+% that will change the fit function. As discussed later in this tutorial,
+% such errors induce an offset of the average MSD curve, that you need to
+% take into account in the fit. This adds another free variable,
+% compromising the robustness of the fit even more.
+
+
+%% Velocity auto-correlation.
+%
+% Another way to discard the possibility a purely Brownian motion is to
+% check the velocity auto-correlation:
+
+ma = ma.computeVCorr;
+figure
+ma.plotMeanVCorr
+
+%%
+% Note that the auto-correlation seems to be above 0. This shows that on
+% average, a displacement has more chance to be in the same direction over
+% time.
+%
+% Qian _et al._ [2] (equations 10 & 11) mention that one could derive the
+% direction motion velocity out the velocity analysis. However it fails in
+% our case since each particle have a different motion vector: Their
+% directed motion have the same mean speed, but not the same direction. So
+% far, the fit of the MSD curve is the only way to derive the direction
+% motion speed.
+
+
+##### SOURCE END #####
+--></body></html>
