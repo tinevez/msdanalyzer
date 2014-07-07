@@ -57,6 +57,32 @@ Emmanuel Laplantine. <em>TNF and IL-1 exhibit distinct ubiquitin
 requirements for inducing NEMO-IKK supramolecular structures.</em> <em>J Cell
 Biol (2014)</em> vol. 204 (2) pp. 231-45</a></p>
 
+
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation.</h2>
+
+<p>Just download the link to the zip file or the tar.gz file and extract the <code>@msdanalyzer</code> folder. Drop it in a folder that belongs to the MATLAB path (the @msdanalyzer folder should not be in the path itself).</p>
+
+<p>If everything works, typing</p>
+
+<p><code>>> ma = msdanalyzer(2, 'µm', 's')</code></p>
+
+</p>should return something like:</p>
+
+<pre>  msdanalyzer with properties:
+
+      TOLERANCE: 12
+         tracks: {}
+          n_dim: 2
+    space_units: 'µm'
+     time_units: 's'
+            msd: []
+          vcorr: []
+           lfit: []
+      loglogfit: []
+          drift: []
+</pre>
+
 <h2>
 <a name="brownian-motion-and-mean-square-displacement" class="anchor" href="#brownian-motion-and-mean-square-displacement"><span class="octicon octicon-link"></span></a>Brownian motion and mean square displacement.</h2>
 
@@ -224,7 +250,7 @@ velocity autocorrelation. Automated fits of the MSD curves are included (but the
 <p>To document the class, we will play with toy examples, using simulated trajectories, Our simulations will be kept simple, even trivial. There is a deep literature on the modeling of diffusion, but we will skip any complexities, at the expense of scientific relevance. See [3] for details on modeling. </p>
 
 <h2>
-<a name="tutorial-content" class="anchor" href="#tutorial-content"><span class="octicon octicon-link"></span></a>Tutorial content</h2>
+<a name="tutorial-content" class="anchor" href="#tutorial-content"><span class="octicon octicon-link"></span></a>Tutorial content.</h2>
 
 <ol>
 <li>
