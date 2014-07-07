@@ -4,11 +4,11 @@
   <head>
     <meta charset='utf-8' />
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Msdanalyzer : A MATLAB class for Mean Square Displacement analysis." />
+    <meta name="description" content="@msdanalyzer : A MATLAB class for Mean Square Displacement analysis." />
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <title>Msdanalyzer</title>
+    <title>@msdanalyzer</title>
   </head>
 
   <body>
@@ -18,7 +18,7 @@
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/tinevez/msdanalyzer">View on GitHub</a>
 
-          <h1 id="project_title">Msdanalyzer</h1>
+          <h1 id="project_title">@msdanalyzer</h1>
           <h2 id="project_tagline">A MATLAB class for Mean Square Displacement analysis.</h2>
 
             <section id="downloads">
@@ -34,197 +34,214 @@
         <h1>
 <a name="mean-square-displacement-analysis-of-particle-trajectories" class="anchor" href="#mean-square-displacement-analysis-of-particle-trajectories"><span class="octicon octicon-link"></span></a>Mean square displacement analysis of particle trajectories.</h1>
 
-<p>Mean square displacement (MSD) analysis is a technique commonly used in
-colloidal studies and biophysics to determine what is the mode of
-displacement of particles followed over time. In particular, it can help
-determine whether the particle is:</p>
+<p>Mean square displacement (MSD) analysis is a technique commonly used in colloidal studies and biophysics to determine what is the mode of displacement of particles followed over time. In particular, it can help determine whether the particle is:</p>
 
 <ul>
 <li>freely diffusing;</li>
 <li>transported;</li>
 <li>bound and limited in its movement.</li>
-</ul><p>On top of this, it can also derive an estimate of the parameters of the
-movement, such as the diffusion coefficient. </p>
+</ul><p>On top of this, it can also derive an estimate of the parameters of the movement, such as the diffusion coefficient. </p>
 
-<p><code>@msdanalyzer</code> is a MATLAB per-value class that helps performing this
-kind of analysis. The user provides several trajectories he measured, and
-the class can derive meaningful quantities for the determination of the
-movement modality, assuming that all particles follow the same movement
-model and sample the same environment.</p>
+<p><code>@msdanalyzer</code> is a MATLAB per-value class that helps performing this kind of analysis. The user provides several trajectories he measured, and the class can derive meaningful quantities for the determination of the movement modality, assuming that all particles follow the same movement model and sample the same environment.</p>
 
-<p>This tutorial doubles the documentation of the class, that can be
-accessed in classical ways. We demonstrate here how to use it, using very
-basic numerical simulations. The literature on MSD analysis is quite
-dense; in no way this beginner tutorial can hope to replace it. The
-examples we use are trivial, and we do not discuss the complex but
-important matter of the results significance. A demanding user is
-referred to the publications listed in this tutorial, and to the
-references they link.</p>
+<p>This tutorial doubles the documentation of the class, that can be accessed in classical ways. We demonstrate here how to use it, using very basic numerical simulations. The literature on MSD analysis is quite dense; in no way this beginner tutorial can hope to replace it. The examples we use are trivial, and we do not discuss the complex but important matter of the results significance. A demanding user is referred to the publications listed in this tutorial, and to the references they link.</p>
 
 <h2>
 <a name="citing-this-work" class="anchor" href="#citing-this-work"><span class="octicon octicon-link"></span></a>Citing this work.</h2>
 
-<p>If you use this tool for your work, we kindly ask you to cite the
-following article for which it was created:</p>
+<p>If you use this tool for your work, we kindly ask you to cite the following article for which it was created:</p>
 
-<p>Nadine Tarantino, Jean-Yves Tinevez, Elizabeth Faris Crowell, Bertrand
+<p><a href="http://jcb.rupress.org/content/204/2/231">Nadine Tarantino, Jean-Yves Tinevez, Elizabeth Faris Crowell, Bertrand
 Boisson, Ricardo Henriques, Musa Mhlanga, Fabrice Agou, Alain Israël, and
 Emmanuel Laplantine. <em>TNF and IL-1 exhibit distinct ubiquitin
 requirements for inducing NEMO-IKK supramolecular structures.</em> <em>J Cell
-Biol (2014)</em> vol. 204 (2) pp. 231-45</p>
-
-<p><a href="http://jcb.rupress.org/content/204/2/231">http://jcb.rupress.org/content/204/2/231</a></p>
-
-<h1>
-<a name="brownian-motion-and-mean-square-displacement" class="anchor" href="#brownian-motion-and-mean-square-displacement"><span class="octicon octicon-link"></span></a>Brownian motion and mean square displacement.</h1>
-
-<p>According to Einstein theory (the first part), an ensemble of particles
-undergoing brownian motion will have the following density:</p>
-
-<p>$$ \rho(r,t) = \frac{\rho_0}{\sqrt{4\pi Dt}} e^{-\frac{r^2}{4Dt}} $$</p>
-
-<p>assuming all the particles where followed from a single point at |t=0|,
-that |r| is the distance to this point, and |D| the diffusion
-coefficient. This (and much more) can be found in Einstein historical
-paper [1].</p>
-
-<p>Using this formula, one can derive the mean square displacement for such
-particles:</p>
-
-<p>$$ &lt; r^2 &gt; = 2 d D t $$</p>
-
-<p>where |d| is the dimensionality of the problem (2 for 2D, etc...) and |D|
-the diffusion coefficient. The mean is taken over a whole ensemble of
-particles: you have to sample many particles, compute
-$\textrm{msd}<em>i(\tau) = (r_i(\tau)-r</em>{i}(0))^2$ for each particle <code>i</code> and
-average the resulting <code>msd_i</code> over all particles.</p>
-
-<p>We see that the plot of the MSD value as a function of time should be a
-straight line in the case of diffusing movement. We therefore have a way
-to check what is the modality of the particle movement. If the MSD is a
-line, then it is diffusing, and the slope gives us the diffusion
-coefficient. If the MSD saturates and has a concave curvature, then its
-movement is impeded: it cannot freely diffuse away from its starting
-point. On the contrary, if the MSD increases faster than at linear rate,
-then it must be transported, because Brownian motion could not take it
-away that fast.</p>
-
-<p>This is great, because to decide whether the erratic movement of a
-particle that you are observing is freely diffusive, bound, or
-transported, you would have to follow the particle for an infinite
-amount of time. This formula gives you a function that can be evaluated
-to check whether the particle movement is of any type. So we just need a
-way to evaluate it practically.</p>
-
-<p>Experimentally, the MSD for a single particle is also taken as a mean. If
-the process is stationary (that is: the "situation", experimental
-conditions, etc...  do not change over time), the ensemble average can be
-taken as a time average for a single trajectory, and |msd| for a single
-particle can be calculated as</p>
-
-<p>$$\textrm{msd}_i(\tau) = \sum_t (r_i(t+\tau) - r_i(t) )^2$$</p>
-
-<p>$\tau$ is called the delay; the MSD tells you how far can a particle
-under Brownian motion can go over a time $\tau$ . For finite
-trajectories, obviously the smaller delays $\tau$  will be more
-represented in the average than longer delays. For instance, if a
-trajectory has |N| points in it, the delay corresponding to one frame
-will have |N-1| points in the average, and the delay corresponding to |N|
-frames will only have one. This has major consequences on measurement
-certainty, see [2].</p>
+Biol (2014)</em> vol. 204 (2) pp. 231-45</a></p>
 
 <h2>
-<a name="msdanalyzer-a-matlab-per-value-class-for-msd-analysis" class="anchor" href="#msdanalyzer-a-matlab-per-value-class-for-msd-analysis"><span class="octicon octicon-link"></span></a>|@msdanalyzer|: a MATLAB per-value class for MSD analysis.</h2>
+<a name="brownian-motion-and-mean-square-displacement" class="anchor" href="#brownian-motion-and-mean-square-displacement"><span class="octicon octicon-link"></span></a>Brownian motion and mean square displacement.</h2>
 
-<p>The class presented here perform these computations automatically, and
-offers a lot of convenience methods to simplify the analysis of
-trajectories. </p>
+<p>According to Einstein theory (the first part), an ensemble of particles undergoing brownian motion will have the following density:</p>
 
-<p>The user must provide the class with particle trajectories, possibly
-several thousands of them. The class itself cannot generate those
-trajectories. For this, you want to check single-particle tracking tools.
-Here are a few examples, drawn from Life-Sciences and my work:</p>
+<p><math mathvariant='italic'>
+    <mtext>&#961;</mtext>
+    <mo maxsize='1'>(</mo>
+    <mtext>r</mtext>
+    <mo>,</mo>
+    <mtext>t</mtext>
+    <mo maxsize='1'>)</mo>
+    <mo>=</mo>
+    <mfrac>
+        <msub>
+            <mtext>&#961;</mtext>
+            <mn>0</mn>
+        </msub>
+        <mrow>
+            <msqrt>
+                <mtext>4π</mtext>
+                <mtext>Dt</mtext>
+            </msqrt>
+        </mrow>
+    </mfrac>
+    <msup>
+        <mtext>e</mtext>
+        <mrow>
+            <mo>-</mo>
+            <mfrac>
+                <msup>
+                    <mtext>r</mtext>
+                    <mn>2</mn>
+                </msup>
+                <mtext>4Dt</mtext>
+            </mfrac>
+        </mrow>
+    </msup>
+</math>
+</p>
+
+<p>assuming all the particles where followed from a single point at t=0, that r is the distance to this point, and D the diffusion coefficient. This (and much more) can be found in Einstein historical paper [1].</p>
+
+<p>Using this formula, one can derive the mean square displacement for such particles:</p>
+
+<p><math mathvariant='italic'>
+    <msup>
+        <mtext>r</mtext>
+        <mn>2</mn>
+    </msup>
+    <mo>=</mo>
+    <mn>2</mn>
+    <mtext>d</mtext>
+    <mtext>D</mtext>
+    <mtext>t</mtext>
+</math></p>
+
+<p>where d is the dimensionality of the problem (2 for 2D, etc...) and D the diffusion coefficient. The mean is taken over a whole ensemble of particles: you have to sample many particles, compute <math mathvariant='italic' display='inline'>
+    <msub>
+        <mtext mathvariant='normal'>msd</mtext>
+        <mtext>i</mtext>
+    </msub>
+    <mo maxsize='1'>(</mo>
+    <mtext>τ</mtext>
+    <mo maxsize='1'>)</mo>
+    <mo>=</mo>
+    <mo maxsize='1'>(</mo>
+    <msub>
+        <mtext>r</mtext>
+        <mtext>i</mtext>
+    </msub>
+    <mo maxsize='1'>(</mo>
+    <mtext>τ</mtext>
+    <mo maxsize='1'>)</mo>
+    <mo>-</mo>
+    <msub>
+        <mtext>r</mtext>
+        <mtext>i</mtext>
+    </msub>
+    <mo maxsize='1'>(</mo>
+    <mn>0</mn>
+    <mo maxsize='1'>)</mo>
+    <msup>
+        <mo maxsize='1'>)</mo>
+        <mn>2</mn>
+    </msup>
+</math>
+ for each particle i and
+average the resulting <math mathvariant='italic' display='inline'>
+    <msub>
+        <mtext mathvariant='normal'>msd</mtext>
+        <mtext>i</mtext>
+    </msub>
+</math> over all particles.</p>
+
+<p>We see that the plot of the MSD value as a function of time should be a straight line in the case of diffusing movement. We therefore have a way to check what is the modality of the particle movement. If the MSD is a line, then it is diffusing, and the slope gives us the diffusion coefficient. If the MSD saturates and has a concave curvature, then its movement is impeded: it cannot freely diffuse away from its starting point. On the contrary, if the MSD increases faster than at linear rate, then it must be transported, because Brownian motion could not take it away that fast.</p>
+
+<p>This is great, because to decide whether the erratic movement of a particle that you are observing is freely diffusive, bound, or transported, you would have to follow the particle for an infinite amount of time. This formula gives you a function that can be evaluated to check whether the particle movement is of any type. So we just need a way to evaluate it practically.</p>
+
+<p>Experimentally, the MSD for a single particle is also taken as a mean. If the process is stationary (that is: the "situation", experimental conditions, etc...  do not change over time), the ensemble average can be taken as a time average for a single trajectory, and MSD for a single particle can be calculated as</p>
+
+<p><math mathvariant='italic'>
+    <msub>
+        <mtext mathvariant='normal'>msd</mtext>
+        <mtext>i</mtext>
+    </msub>
+    <mo maxsize='1'>(</mo>
+    <mtext>τ</mtext>
+    <mo maxsize='1'>)</mo>
+    <mo>=</mo>
+    <munder>
+        <mo>∑</mo>
+        <mtext>t</mtext>
+    </munder>
+    <mo maxsize='1'>(</mo>
+    <msub>
+        <mtext>r</mtext>
+        <mtext>i</mtext>
+    </msub>
+    <mo maxsize='1'>(</mo>
+    <mtext>t</mtext>
+    <mo>+</mo>
+    <mtext>τ</mtext>
+    <mo maxsize='1'>)</mo>
+    <mo>-</mo>
+    <msub>
+        <mtext>r</mtext>
+        <mtext>i</mtext>
+    </msub>
+    <mo maxsize='1'>(</mo>
+    <mtext>t</mtext>
+    <mo maxsize='1'>)</mo>
+    <msup>
+        <mo maxsize='1'>)</mo>
+        <mn>2</mn>
+    </msup>
+</math>
+</p>
+
+<p>&#964 is called the delay; the MSD tells you how far can a particle under Brownian motion can go over a time &#964. For finite trajectories, obviously the smaller delays &#964 will be more represented in the average than longer delays. For instance, if a trajectory has N points in it, the delay corresponding to one frame will have N-1 points in the average, and the delay corresponding to N frames will only have one. This has major consequences on measurement certainty, see [2].</p>
+
+<h2>
+<a name="msdanalyzer-a-matlab-per-value-class-for-msd-analysis" class="anchor" href="#msdanalyzer-a-matlab-per-value-class-for-msd-analysis"><span class="octicon octicon-link"></span></a>@msdanalyzer: a MATLAB per-value class for MSD analysis.</h2>
+
+<p>The class presented here perform these computations automatically, and offers a lot of convenience methods to simplify the analysis of trajectories. </p>
+
+<p>The user must provide the class with particle trajectories, possibly several thousands of them. The class itself cannot generate those trajectories. For this, you want to check single-particle tracking tools. Here are a few examples, drawn from Life-Sciences and my work:</p>
 
 <ul>
-<li> ships a tracking tool
-named  made by yours
-truly, that can deal rather well with Brownian motion. The software is a
-Java program. </li>
-<li> is another Java
-software dedicated to Life Science that also offers
-.</li>
-<li>If you already have the positions of all particles, and just need to
-link them to build tracks, you can use in MATLAB the
- tool, again made by yours truly. But it has a much
-simpler capability compared that the two others.</li>
+<li> <a href="http://fiji.sc/">Fiji</a> ships a tracking tool named <a href="http://fiji.sc/TrackMate">TrackMate</a> made by yours truly, that can deal rather well with Brownian motion. The software is a Java program. </li>
+<li> <a href="http://icy.bioimageanalysis.org/">Icy</a> is another Java
+software dedicated to Life Science that also offers <a href="http://icy.bioimageanalysis.org/plugin/Spot_Tracking">single particle tracking</a>.</li>
+<li>If you already have the positions of all particles, and just need to link them to build tracks, you can use this <a href="http://www.mathworks.com/matlabcentral/fileexchange/34040-simple-tracker">simple tracker</a> in MATLAB, again made by yours truly. But it has a much simpler capability compared that the two others.</li>
 </ul><p>And there are most likely plenty of other solutions out there.</p>
 
-<p>|@msdanalyzer| can deal with tracks (particle trajectories) that do not
-start all at the same time, have different lengths, have missing
-detections (gaps: a particle fails to be detected in one or several frame
-then reappear), and do not have the same time sampling. As soon as you
-added your tracks to the class, everything is transparent. 
-It offers facilities to plot and inspect the data, whether for individual
-particles, or on ensemble average quantities. It has several methods for
-correcting for drift, which is the main source of error in the analysis.
-Once corrected, the data can analyzed via the MSD curves or via the
-velocity autocorrelation. Automated fits of the MSD curves are included
-(but they require you have the curve fitting toolbox), allowing to derive
-the type of motion and its characteristics.</p>
+<p>@msdanalyzer can deal with tracks (particle trajectories) that do not start all at the same time, have different lengths, have missing detections (gaps: a particle fails to be detected in one or several frame then reappear), and do not have the same time sampling. As soon as you added your tracks to the class, everything is transparent. It offers facilities to plot and inspect the data, whether for individual particles, or on ensemble average quantities. It has several methods for correcting for drift, which is the main source of error in the analysis. Once corrected, the data can analyzed via the MSD curves or via the
+velocity autocorrelation. Automated fits of the MSD curves are included (but they require you have the curve fitting toolbox), allowing to derive the type of motion and its characteristics.</p>
 
-<p>The class code is made of one large monolithic file. This is not the best
-choice for code sanity, but it eases its diffusion to you. I made sure
-the documentation was extensive. In case of doubt, start with </p>
+<p>The class code is made of one several M-files. I made sure the documentation was extensive. In case of doubt, start with </p>
 
-<p>doc msdanalyzer</p>
+<p><code>>> doc msdanalyzer</code></p>
 
-<p>and will get a page where all methods and fields are detailed. </p>
+<p>and will get a page where all methods and fields are detailed.</p>
 
-<p>To document the class, we will play with toy examples, using simulated
-trajectories, Our simulations will be kept simple, even trivial. There
-is a deep literature on the modeling of diffusion, but we will skip any
-complexities, at the expense of scientific relevance. See [3] for details
-on modeling. </p>
+<p>To document the class, we will play with toy examples, using simulated trajectories, Our simulations will be kept simple, even trivial. There is a deep literature on the modeling of diffusion, but we will skip any complexities, at the expense of scientific relevance. See [3] for details on modeling. </p>
 
 <h2>
 <a name="tutorial-content" class="anchor" href="#tutorial-content"><span class="octicon octicon-link"></span></a>Tutorial content</h2>
 
 <ol>
 <li>
-<a href="MSDTuto_brownian.html">Simulating and analyzing Brownian motion</a>. Here
-we introduce the class using the most simple example: a few particles
-undergoing a purely diffusive process. We will review all the important
-functions of the class for calculating and analyzing the MSD curves.</li>
+<a href="MSDTuto_brownian.html">Simulating and analyzing Brownian motion</a>. Here we introduce the class using the most simple example: a few particles undergoing a purely diffusive process. We will review all the important functions of the class for calculating and analyzing the MSD curves.</li>
 <li>
-<a href="MSDTuto_vcorr.html">Velocities and velocity auto-correlation</a>. In this
-chapter we quickly review how to exploit the displacement and velocity
-autocorrelation function to analyze the particles motion.</li>
+<a href="MSDTuto_vcorr.html">Velocities and velocity auto-correlation</a>. In this chapter we quickly review how to exploit the displacement and velocity autocorrelation function to analyze the particles motion.</li>
 <li>
-<a href="MSDTuto_error.html">Impact of tracking and localization error</a>. We
-refine a little bit the plain simulations of the previous chapter, trying
-to generate tracks that are more resembling experimental measurements. We
-reproduce some of the results of [4], investigating how these errors
-impact the final analysis results. </li>
+<a href="MSDTuto_error.html">Impact of tracking and localization error</a>. We refine a little bit the plain simulations of the previous chapter, trying to generate tracks that are more resembling experimental measurements. We reproduce some of the results of [4], investigating how these errors impact the final analysis results. </li>
 <li>
-<a href="MSDTuto_directed.html">Directed motion</a>. We deal with the case of
-particles that have a directed motion on top of a Brownian motion. We
-introduce how to distinguish between the two kind of motion, and exploit
-analysis results to derive motion characteristics. </li>
+<a href="MSDTuto_directed.html">Directed motion</a>. We deal with the case of particles that have a directed motion on top of a Brownian motion. We introduce how to distinguish between the two kind of motion, and exploit analysis results to derive motion characteristics. </li>
 <li>
-<a href="MSDTuto_confined.html">Confined movements</a>. This is just the converse
-case: for this type of motion, the particle is not free to diffuse, but
-somehow bound to a fixed structure or hindered in its movement by an
-invisible fence. </li>
+<a href="MSDTuto_confined.html">Confined movements</a>. This is just the converse case: for this type of motion, the particle is not free to diffuse, but somehow bound to a fixed structure or hindered in its movement by an invisible fence. </li>
 <li>
-<a href="MSDTuto_drift.html">Correcting for drift</a>. This chapter details what
-methods are offered to correct for drift in measurements. It also
-provides an assessment of the most adequate method. And conclude this
-tutorial.</li>
-</ol><p>Since most of the complexity of the calculation is hidden in the
-|@msdanalyzer| class, these tutorial chapters involve mainly MATLAB code
-to generate and simulate fake particle trajectories. Some hacks are
-presented to facilitate the task, that I hope you will find useful as
-well.</p>
+<a href="MSDTuto_drift.html">Correcting for drift</a>. This chapter details what methods are offered to correct for drift in measurements. It also provides an assessment of the most adequate method. And concludes this tutorial.</li>
+</ol>
+
+<p>Since most of the complexity of the calculation is hidden in the @msdanalyzer class, these tutorial chapters involve mainly MATLAB code to generate and simulate fake particle trajectories. Some hacks are presented to facilitate the task, that I hope you will find useful as well.</p>
 
 <h2>
 <a name="references" class="anchor" href="#references"><span class="octicon octicon-link"></span></a>References</h2>
@@ -250,8 +267,8 @@ Stat Nonlin Soft Matter Phys (2010) vol. 82 (4 Pt 1) pp. 041914</a></li>
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
       <footer class="inner">
-        <p class="copyright">Msdanalyzer maintained by <a href="https://github.com/tinevez">tinevez</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+        <p class="copyright"><b>@msdanalyzer</b> built and maintained by <a href="https://github.com/tinevez">Jean-Yves Tinevez</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a> & <a href="www.mathworks.com/products/matlab/">MATLAB</a></p>.
       </footer>
     </div>
 
