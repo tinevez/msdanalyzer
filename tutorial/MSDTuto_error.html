@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Impact of tracking and localization error.</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-06-11"><meta name="DC.source" content="MSDTuto_error.m"><style type="text/css">
+      --><title>Impact of tracking and localization error.</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-01-13"><meta name="DC.source" content="MSDTuto_error.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -79,7 +79,7 @@ D  = 1e-3; <span class="comment">% &micro;m^2/s - diffusion coefficient</span>
 dT = 0.2; <span class="comment">% s,</span>
 SIZE = 8; <span class="comment">% &micro;m</span>
 
-k = sqrt(N_DIM * D * dT);
+k = sqrt(2 * D * dT);
 tracks = cell(N_PARTICLES, 1);
 
 <span class="keyword">for</span> i_spot = 1 : N_PARTICLES
@@ -120,14 +120,14 @@ Dstd  =  std( ma.lfit.a(good_enough_fit) ) / 2 / ma.n_dim;
 fprintf(<span class="string">'Found D = %.3e &plusmn; %.3e (mean &plusmn; std, N = %d)\n'</span>, <span class="keyword">...</span>
     Dmean, Dstd, sum(good_enough_fit));
 </pre><pre class="codeoutput">Fitting 100 curves of MSD = f(t), taking only the first 25% of each curve... Done.
-Found D = 1.109e-03 &plusmn; 4.620e-04 (mean &plusmn; std, N = 83)
+Found D = 1.061e-03 &plusmn; 3.970e-04 (mean &plusmn; std, N = 88)
 </pre><p>So this is what our analyzer does. The localization error does not impact the slope measurement, and the value we derive for the diffusion coefficient is correct.</p><p>It is actually amazing that we can still derive a good estimate for the diffusion coefficient with that error magnitude. The mean displacement caused by the physical process of diffusion is given by <tt>k</tt>, calculated above. The localization error we simulated is:</p><pre class="codeinput">fprintf(<span class="string">'Simulated localization error magnitude: %.3e %s.\n'</span>, <span class="keyword">...</span>
     BAD_XY_TYPICAL_OFFSET, SPACE_UNITS);
 fprintf(<span class="string">'Typical brownian displacement magnitude: %.3e %s.\n'</span>, <span class="keyword">...</span>
     k, SPACE_UNITS);
 </pre><pre class="codeoutput">Simulated localization error magnitude: 2.000e-01 &micro;m.
 Typical brownian displacement magnitude: 2.000e-02 &micro;m.
-</pre><p>For a larger localization error, the estimate of <tt>D</tt> degrades. Try for instance to make the Brownian movement smaller by setting the time interval to 50 ms, and you will get an estimate of <tt>D</tt> biased towards to high values.</p><h2>Estimating the localization error magnitude.<a name="8"></a></h2><p>Xavier Michalet and others noticed that the offset <tt>b</tt> could be used to estimate the localization error magnitude. In [4], he reports that the dynamic localization uncertainty is given by (see equations 12 and 14 in [4]):</p><p><img src="MSDTuto_error_eq08833.png" alt="$$ \sigma = \frac{1}{2} \sqrt{b} $$"></p><p>If we apply it to our fits, we get:</p><pre class="codeinput">bmean = mean( ma.lfit.b(good_enough_fit) );
+</pre><p>For a larger localization error, the estimate of <tt>D</tt> degrades. Try for instance to make the Brownian movement smaller by setting the time interval to 50 ms, and you will get an estimate of <tt>D</tt> biased towards to high values.</p><h2>Estimating the localization error magnitude.<a name="8"></a></h2><p>Xavier Michalet and others noticed that the offset <tt>b</tt> could be used to estimate the localization error magnitude. In [4], he reports that the dynamic localization uncertainty is given by (see equations 12 and 14 in [4]):</p><p><img src="MSDTuto_error_eq12109028187383072189.png" alt="$$ \sigma = \frac{1}{2} \sqrt{b} $$"></p><p>If we apply it to our fits, we get:</p><pre class="codeinput">bmean = mean( ma.lfit.b(good_enough_fit) );
 sigma_locmean = 0.5 * sqrt(bmean);
 
 <span class="comment">% Standard deviation derived by variance composition</span>
@@ -136,7 +136,7 @@ sigma_sigma_locmean = 0.5 * std( ma.lfit.b(good_enough_fit) ) / sigma_locmean;
 fprintf(<span class="string">'Localization error estimated to be s = %.3e &plusmn; %.3e (mean &plusmn; std, N = %d),\n'</span>, <span class="keyword">...</span>
     sigma_locmean, sigma_sigma_locmean, sum(good_enough_fit));
 fprintf(<span class="string">'to compare to the simulated value: %.3e.\n'</span>, BAD_XY_TYPICAL_OFFSET);
-</pre><pre class="codeoutput">Localization error estimated to be s = 1.988e-01 &plusmn; 2.817e-02 (mean &plusmn; std, N = 83),
+</pre><pre class="codeoutput">Localization error estimated to be s = 1.989e-01 &plusmn; 2.948e-02 (mean &plusmn; std, N = 88),
 to compare to the simulated value: 2.000e-01.
 </pre><p>In practice however, the localization error has various experimental sources. In particular, Xavier Michalet notes that including a camera finite exposure time as a source of localization error (you image the particle as it moves) can yield negative offset, which renders our estimation clueless.</p><h2>More realistic tracks.<a name="10"></a></h2><p>Let us simulate more tracks, introducing some tweaks that make them more resembling to experimentally measured tracks:</p><div><ul><li>they don't start at the same time and don't last for the same duration. Obviously, this should not affect the results if the analyzer is well written;</li><li>they have some gaps: some detections are missing for some frames. Again, this should not impact the mean value of the diffusion coefficient, but merely change the confidence interval for the short delays;</li><li>the detector fails sometimes: some of the particles are incorrectly localized: the measured XY position as an offset which does not correspond to reality. This is what we just simulated above, except that only a proportion of detections are affected;</li><li>the tracker fails sometimes: he links together in a same track two different particles that are close. The tracks might jump from one particle to another, generating fallacious displacements.</li></ul></div><h2>Simulation parameters<a name="11"></a></h2><pre class="codeinput">close <span class="string">all</span>
 clear <span class="string">all</span>
@@ -234,9 +234,9 @@ fprintf(<span class="string">' - %d missed detections\n'</span>, n_missed)
 fprintf(<span class="string">' - %d bad detections\n'</span>, n_bad_xy)
 fprintf(<span class="string">' - %d bad tracks\n'</span>, n_bad_track)
 </pre><pre class="codeoutput">Generated 100 tracks, with:
- - 15424 missed detections
- - 10388 bad detections
- - 25 bad tracks
+ - 14805 missed detections
+ - 10041 bad detections
+ - 26 bad tracks
 </pre><h2>How the tracks look like<a name="13"></a></h2><p>Let's use <tt>@msdanalyzer</tt> to quickly see how the simulated trajectories look like:</p><pre class="codeinput">ma = msdanalyzer(2, <span class="string">'&micro;m'</span>, <span class="string">'s'</span>);
 ma = ma.addAll(tracks);
 ma.plotTracks;
@@ -254,8 +254,8 @@ fprintf(<span class="string">'Found D = %.3e &plusmn; %.3e (mean &plusmn; std, N
     Dmean, Dstd, sum(good_enough_fit));
 </pre><pre class="codeoutput">Computing MSD of 100 tracks... Done.
 Fitting 100 curves of MSD = f(t), taking only the first 25% of each curve... Done.
-Found D = 1.525e-03 &plusmn; 1.398e-03 (mean &plusmn; std, N = 81)
-</pre><img vspace="5" hspace="5" src="MSDTuto_error_03.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+Found D = 1.456e-03 &plusmn; 1.944e-03 (mean &plusmn; std, N = 89)
+</pre><img vspace="5" hspace="5" src="MSDTuto_error_03.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Impact of tracking and localization error.
 %
@@ -296,7 +296,7 @@ D  = 1e-3; % µm^2/s - diffusion coefficient
 dT = 0.2; % s,
 SIZE = 8; % µm
 
-k = sqrt(N_DIM * D * dT);
+k = sqrt(2 * D * dT);
 tracks = cell(N_PARTICLES, 1);
 
 for i_spot = 1 : N_PARTICLES

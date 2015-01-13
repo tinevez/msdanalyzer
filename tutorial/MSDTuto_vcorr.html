@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Velocities and velocity auto-correlation.</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-06-11"><meta name="DC.source" content="MSDTuto_vcorr.m"><style type="text/css">
+      --><title>Velocities and velocity auto-correlation.</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-01-13"><meta name="DC.source" content="MSDTuto_vcorr.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -78,7 +78,7 @@ N_TIME_STEPS = 100;
 N_DIM = 2; <span class="comment">% 2D</span>
 D  = 1e-3; <span class="comment">% &micro;m^2/s</span>
 dT = 0.05; <span class="comment">% s</span>
-k = sqrt(N_DIM * D * dT);
+k = sqrt(2 * D * dT);
 
 tracks = cell(N_PARTICLES, 1);
 <span class="keyword">for</span> i = 1 : N_PARTICLES
@@ -123,13 +123,13 @@ ylabel(<span class="string">'#'</span>)
 </pre><pre class="codeoutput">
 ans =
 
-   -0.0059    0.0023
+   -0.0082   -0.0010
 
 </pre><pre class="codeinput">std(V(:,2:end))
 </pre><pre class="codeoutput">
 ans =
 
-    0.1989    0.1959
+    0.2028    0.1931
 
 </pre><pre class="codeinput">k/dT <span class="comment">%#ok&lt;NOPTS&gt;</span>
 </pre><pre class="codeoutput">
@@ -137,7 +137,7 @@ ans =
 
     0.2000
 
-</pre><h2>Velocity autocorrelation.<a name="9"></a></h2><p>Velocity auto-correlation is another way of checking the movement type. It is a value that basically tells until when the particle "remembers" its previous movements. Like for the MSD, it is a time-averaged value, defined over a delay domain. If <tt>t1</tt> and <tt>t2</tt> are such that <tt>dt=t2-t1</tt>, then the velocity autocorrelation is defined by:</p><p><img src="MSDTuto_vcorr_eq70499.png" alt="$$ \textrm{V}_\textrm{corr}(dt) = \left< \mathbf{v}(t_2) \cdot \mathbf{v}(t_1) \right&gt; $$"></p><p><b><tt>v</tt></b> is the instantaneous velocity <b>vector</b> and the product is the dot product. The average is taken on all <tt>t1</tt> and <tt>t2</tt> such that <tt>dt=t2-t1</tt>.</p><p>For Brownian motion, the displacements are completely uncorrelated, so the velocity autocorrelation should be 0 for every delay, except <tt>dt=0</tt>.</p><p><tt>msdanalyzer</tt> does the computation for you:</p><pre class="codeinput"><span class="comment">% we use a syntax close to the one we used for MSD curves</span>
+</pre><h2>Velocity autocorrelation.<a name="9"></a></h2><p>Velocity auto-correlation is another way of checking the movement type. It is a value that basically tells until when the particle "remembers" its previous movements. Like for the MSD, it is a time-averaged value, defined over a delay domain. If <tt>t1</tt> and <tt>t2</tt> are such that <tt>dt=t2-t1</tt>, then the velocity autocorrelation is defined by:</p><p><img src="MSDTuto_vcorr_eq14799710444999762396.png" alt="$$ \textrm{V}_\textrm{corr}(dt) = \left< \mathbf{v}(t_2) \cdot \mathbf{v}(t_1) \right&gt; $$"></p><p><b><tt>v</tt></b> is the instantaneous velocity <b>vector</b> and the product is the dot product. The average is taken on all <tt>t1</tt> and <tt>t2</tt> such that <tt>dt=t2-t1</tt>.</p><p>For Brownian motion, the displacements are completely uncorrelated, so the velocity autocorrelation should be 0 for every delay, except <tt>dt=0</tt>.</p><p><tt>msdanalyzer</tt> does the computation for you:</p><pre class="codeinput"><span class="comment">% we use a syntax close to the one we used for MSD curves</span>
 ma = ma.computeVCorr;
 ma.vcorr
 </pre><pre class="codeoutput">Computing velocity autocorrelation of 10 tracks... Done.
@@ -156,7 +156,7 @@ ans =
     [99x4 double]
 
 </pre><p>Like for MSD curves, the velocity correlation is returned in a double array, one for each particle. The data is arranged as follow: <tt>[dt mean std N]</tt>. However, we return <i>normalized</i> autocorrelation, so that for <tt>dt=0</tt> we get <tt>vcorr=1</tt>.</p><p>There is just one method to plot the ensemble mean of the function:</p><pre class="codeinput">ma.plotMeanVCorr
-</pre><img vspace="5" hspace="5" src="MSDTuto_vcorr_02.png" alt=""> <p>We see that apart from <tt>dt=0</tt>, the autocorrelation is 0 everywhere, which is what is expected for pure Brownian motion. We will soon study cases where this is not the case anymore.</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="MSDTuto_vcorr_02.png" alt=""> <p>We see that apart from <tt>dt=0</tt>, the autocorrelation is 0 everywhere, which is what is expected for pure Brownian motion. We will soon study cases where this is not the case anymore.</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Velocities and velocity auto-correlation.
 
@@ -175,7 +175,7 @@ N_TIME_STEPS = 100;
 N_DIM = 2; % 2D
 D  = 1e-3; % µm^2/s
 dT = 0.05; % s
-k = sqrt(N_DIM * D * dT);
+k = sqrt(2 * D * dT);
 
 tracks = cell(N_PARTICLES, 1);
 for i = 1 : N_PARTICLES

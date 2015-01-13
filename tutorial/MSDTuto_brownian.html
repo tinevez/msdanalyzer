@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Brownian motion.</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-06-11"><meta name="DC.source" content="MSDTuto_brownian.m"><style type="text/css">
+      --><title>Brownian motion.</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-01-13"><meta name="DC.source" content="MSDTuto_brownian.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -82,7 +82,7 @@ dT = 0.05; <span class="comment">% s,</span>
 <span class="comment">% Area size, just used to disperse particles in 2D. Has no impact on</span>
 <span class="comment">% analysis.</span>
 SIZE = 2; <span class="comment">% &micro;m</span>
-</pre><p>Following Einstein equation on the previous page, displacements follow a Gaussian PDF with standard deviation given by:</p><pre class="codeinput">k = sqrt(N_DIM * D * dT);
+</pre><p>Following Einstein equation on the previous page, displacements follow a Gaussian PDF with standard deviation given by:</p><pre class="codeinput">k = sqrt(2 * D * dT);
 </pre><p>Let's generate the tracks. <tt>@msdanalyzer</tt> imposes that the tracks you give to it are formatted in the following way: [ Ti Xi Yi ...]. So if we generate a track with 50 measurements in a 2D diffusion problem, we must generate a 50 x 3 double array per particle.</p><pre class="codeinput">tracks = cell(N_PARTICLES, 1);
 
 <span class="keyword">for</span> i = 1 : N_PARTICLES
@@ -166,7 +166,7 @@ all_delays = unique( abs(T1 - T2) );
 ma.plotMSD;
 </pre><img vspace="5" hspace="5" src="MSDTuto_brownian_02.png" alt=""> <p>The plot is quite crowded, and every curve seems to have its own shape. We actually need to go one step further, and compute the ensemble mean: the average over all curves:</p><pre class="codeinput">cla
 ma.plotMeanMSD(gca, true)
-</pre><img vspace="5" hspace="5" src="MSDTuto_brownian_03.png" alt=""> <p>This method computes the weighted average over all MSD curves. Weights are taken to be the number of averaged delay in individual curves, which favors short delays. If you need to have a good confidence over larger delays, you need to sample particle trajectories for a much longer time.</p><p>The grayed area represents the weighted standard deviation over all MSD curves. We would like to have a notion of the confidence on this mean, such as the standard error of the mean; unfortunately there is no consensus as how to define it for weighted means. We can approach it using the formula</p><p><img src="MSDTuto_brownian_eq50744.png" alt="$$ \textrm{sem} \approx \frac{\textrm{weighted&#xA;std}}{\sqrt{\textrm{N}_\textrm{freedom}}} $$"></p><p>The method <tt>getMeanMSD</tt> returns a vector with all you need:</p><pre class="codeinput">help <span class="string">msdanalyzer.getMeanMSD</span>
+</pre><img vspace="5" hspace="5" src="MSDTuto_brownian_03.png" alt=""> <p>This method computes the weighted average over all MSD curves. Weights are taken to be the number of averaged delay in individual curves, which favors short delays. If you need to have a good confidence over larger delays, you need to sample particle trajectories for a much longer time.</p><p>The grayed area represents the weighted standard deviation over all MSD curves. We would like to have a notion of the confidence on this mean, such as the standard error of the mean; unfortunately there is no consensus as how to define it for weighted means. We can approach it using the formula</p><p><img src="MSDTuto_brownian_eq16084500671434643517.png" alt="$$ \textrm{sem} \approx \frac{\textrm{weighted&#xA;std}}{\sqrt{\textrm{N}_\textrm{freedom}}} $$"></p><p>The method <tt>getMeanMSD</tt> returns a vector with all you need:</p><pre class="codeinput">help <span class="string">msdanalyzer.getMeanMSD</span>
 </pre><pre class="codeoutput"> GETMEANMSD Compute the weighted mean of all MSD curves.
  
   msd = obj.getMeanMSD computes and return the weighted mean of all
@@ -199,7 +199,7 @@ plot(fo)
 ma.labelPlotMSD;
 legend <span class="string">off</span>
 </pre><pre class="codeoutput">Estimating D through linear weighted fit of the mean MSD curve.
-D = 9.848e-04 with 95% confidence interval [ 9.716e-04 - 9.979e-04 ].
+D = 1.099e-03 with 95% confidence interval [ 1.086e-03 - 1.111e-03 ].
 Goodness of fit: R&sup2; = 0.999.
 </pre><img vspace="5" hspace="5" src="MSDTuto_brownian_05.png" alt=""> <p>By default, the fit is only made on the first 25% of the curve, following the recommendations of [3]. We may be slightly off depending on your run. The R&sup2; value is close to 1, indicating that the average MSD curve is indeed a line. But since we sampled only 10 particles, we cannot hope to have a good confidence on our results.</p><p>Another approach is to fit individual MSD curves and take the mean of the resulting parameters. This method <tt>fitMSD</tt> actually updates the object:</p><pre class="codeinput">ma = ma.fitMSD;
 </pre><pre class="codeoutput">Fitting 10 curves of MSD = f(t), taking only the first 25% of each curve... Done.
@@ -211,8 +211,8 @@ fprintf(<span class="string">'Estimation of the diffusion coefficient from linea
 fprintf(<span class="string">'D = %.3g &plusmn; %.3g (mean &plusmn; std, N = %d)\n'</span>, <span class="keyword">...</span>
     Dmean, Dstd, sum(good_enough_fit));
 </pre><pre class="codeoutput">Estimation of the diffusion coefficient from linear fit of the MSD curves:
-D = 0.00096 &plusmn; 0.000632 (mean &plusmn; std, N = 10)
-</pre><h2>Particle velocities<a name="23"></a></h2><p>Qian <i>et al.</i> [2] (equations 10 &amp; 11) derived a way to estimate the diffusion coefficient from the distribution of instantaneous velocities. If <tt>v</tt> is the instantaneous velocity vector, then</p><p><img src="MSDTuto_brownian_eq44109.png" alt="$$ \textrm{var}(v) = 2 D / \textrm{dT} $$"></p><p>A word of caution with this expression: Here <tt>v</tt> is the vector itself, with several components (two in 2D), not the vector magnitude. For this expression to be valid, we must take the variance of one of the vector component (<tt>vx</tt> or <tt>vy</tt>). Having several components just yield another estimate. Since we are in 2D, we will have two estimates, that we can average together to refine the overall estimate:</p><pre class="codeinput"><span class="comment">% Retrieve instantaneous velocities, per track</span>
+D = 0.00112 &plusmn; 0.000513 (mean &plusmn; std, N = 10)
+</pre><h2>Particle velocities<a name="23"></a></h2><p>Qian <i>et al.</i> [2] (equations 10 &amp; 11) derived a way to estimate the diffusion coefficient from the distribution of instantaneous velocities. If <tt>v</tt> is the instantaneous velocity vector, then</p><p><img src="MSDTuto_brownian_eq04917454510089732570.png" alt="$$ \textrm{var}(v) = 2 D / \textrm{dT} $$"></p><p>A word of caution with this expression: Here <tt>v</tt> is the vector itself, with several components (two in 2D), not the vector magnitude. For this expression to be valid, we must take the variance of one of the vector component (<tt>vx</tt> or <tt>vy</tt>). Having several components just yield another estimate. Since we are in 2D, we will have two estimates, that we can average together to refine the overall estimate:</p><pre class="codeinput"><span class="comment">% Retrieve instantaneous velocities, per track</span>
  trackV = ma.getVelocities;
 
  <span class="comment">% Pool track data together</span>
@@ -231,8 +231,8 @@ fprintf(<span class="string">'Estimation from velocities histogram:\n'</span>)
 fprintf(<span class="string">'D = %.3g %s, real value was %.3g %s\n'</span>, <span class="keyword">...</span>
     Dest, [SPACE_UNITS <span class="string">'&sup2;/'</span> TIME_UNITS], D, [SPACE_UNITS <span class="string">'&sup2;/'</span> TIME_UNITS]);
 </pre><pre class="codeoutput">Estimation from velocities histogram:
-D = 0.000994 &micro;m&sup2;/s, real value was 0.001 &micro;m&sup2;/s
-</pre><h2>Wrapping up.<a name="24"></a></h2><p>This was the most simple  simulations we could run. Particles were in small number, they all appeared at the same time and were detected in every frame, not missing a single one. In the next parts, we will approach other problem types, building up complexity, and use other techniques for analysis, still based on the MSD curves.</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+D = 0.00093 &micro;m&sup2;/s, real value was 0.001 &micro;m&sup2;/s
+</pre><h2>Wrapping up.<a name="24"></a></h2><p>This was the most simple  simulations we could run. Particles were in small number, they all appeared at the same time and were detected in every frame, not missing a single one. In the next parts, we will approach other problem types, building up complexity, and use other techniques for analysis, still based on the MSD curves.</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Brownian motion.
 %
@@ -267,7 +267,7 @@ SIZE = 2; % µm
 % Following Einstein equation on the previous page, displacements follow a
 % Gaussian PDF with standard deviation given by:
 
-k = sqrt(N_DIM * D * dT);
+k = sqrt(2 * D * dT);
 
 
 %%

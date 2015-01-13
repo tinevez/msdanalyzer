@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Correcting for drift.</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-06-11"><meta name="DC.source" content="MSDTuto_drift.m"><style type="text/css">
+      --><title>Correcting for drift.</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-01-13"><meta name="DC.source" content="MSDTuto_drift.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -79,7 +79,7 @@ SIZE = 10; <span class="comment">% &micro;m</span>
 
 D  = 1e-3; <span class="comment">% &micro;m^2/s</span>
 dT = 0.03; <span class="comment">% s</span>
-k = sqrt(N_DIM * D * dT);
+k = sqrt(2 * D * dT);
 
 <span class="comment">% Drift parameters: a circle moving forward</span>
 drift_time = (0 : N_TIME_STEPS-1)' * dT;
@@ -119,8 +119,8 @@ ma.plotMeanMSD(gca, true);
 ma.fitMeanMSD
 </pre><pre class="codeoutput">Computing MSD of 100 tracks... Done.
 Estimating D through linear weighted fit of the mean MSD curve.
-D = 2.022e-01 with 95% confidence interval [ 1.800e-01 - 2.244e-01 ].
-Goodness of fit: R&sup2; = 0.875.
+D = 1.977e-01 with 95% confidence interval [ 1.754e-01 - 2.200e-01 ].
+Goodness of fit: R&sup2; = 0.869.
 </pre><img vspace="5" hspace="5" src="MSDTuto_drift_02.png" alt=""> <p>We get a wrong value of <tt>D</tt> and a parabola shape for the beginning of the MSD curve, typical of directed motion. The <tt>log-log</tt> analysis we saw before is misled as well:</p><pre class="codeinput">ma = ma.fitLogLogMSD;
 r2fits = ma.loglogfit.r2fit;
 alphas = ma.loglogfit.alpha;
@@ -147,7 +147,7 @@ drift(to_erase, :) = [];
 </pre><pre class="codeoutput">
 ans =
 
-   171     3
+   182     3
 
 </pre><pre class="codeinput">size(ma.drift) <span class="comment">% interpolated drift</span>
 </pre><pre class="codeoutput">
@@ -159,7 +159,7 @@ ans =
 ma.fitMeanMSD
 </pre><pre class="codeoutput">Computing MSD of 100 tracks... Done.
 Estimating D through linear weighted fit of the mean MSD curve.
-D = 1.011e-03 with 95% confidence interval [ 1.006e-03 - 1.016e-03 ].
+D = 1.029e-03 with 95% confidence interval [ 1.026e-03 - 1.033e-03 ].
 Goodness of fit: R&sup2; = 1.000.
 </pre><p>Now the value we get for <tt>D</tt> is much more accurate. The <tt>log-log</tt> fit is also correct now:</p><pre class="codeinput">ma = ma.fitLogLogMSD;
 r2fits = ma.loglogfit.r2fit;
@@ -176,14 +176,14 @@ alphas(bad_fits) = [];
 fprintf(<span class="string">'alpha = %.2f &plusmn; %.2f (mean &plusmn; std, N = %d).\n'</span>, <span class="keyword">...</span>
     mean(alphas), std(alphas), numel(alphas));
 </pre><pre class="codeoutput">Fitting 100 curves of log(MSD) = f(log(t)), taking only the first 25% of each curve... Done.
-Keeping 100 fits (R2 &gt; 0.80).
-alpha = 0.97 &plusmn; 0.13 (mean &plusmn; std, N = 100).
+Keeping 99 fits (R2 &gt; 0.80).
+alpha = 0.99 &plusmn; 0.13 (mean &plusmn; std, N = 99).
 </pre><p>So everything is now looking good. But of course, this is because we dealt with the trivial case of knowing the exact drift trajectory: We used the same variable to simulate a drift and to correct for it. Real experimental measures might not be so ideal. Let's see now how to deal with drift when you cannot measure it directly.</p><h2>Particle centroid correction.<a name="15"></a></h2><p>The next two methods can infer drift just from the particle trajectories. Given of course that they are in sufficient number, and sampled properly. The <tt>centroid</tt> method simply computes the average position over all particles at each time point, and treat this as the drift position. Let's see how it behaves with our current simulation:</p><pre class="codeinput">ma = ma.computeDrift(<span class="string">'centroid'</span>); <span class="comment">% note: no extra parameters.</span>
 ma = ma.computeMSD;
 ma.fitMeanMSD
 </pre><pre class="codeoutput">Computing MSD of 100 tracks... Done.
 Estimating D through linear weighted fit of the mean MSD curve.
-D = 1.004e-03 with 95% confidence interval [ 9.995e-04 - 1.008e-03 ].
+D = 1.021e-03 with 95% confidence interval [ 1.016e-03 - 1.025e-03 ].
 Goodness of fit: R&sup2; = 1.000.
 </pre><p>It seems to work rather well. But let's be frank, this method is the least robust. It greatly depends on the number of particles to be the same at every time point. As soon as there is missing detections, particle trajectories starting or finishing at different time points, it fails. Check this simulation, where we treat these cases:</p><pre class="codeinput">close <span class="string">all</span>
 clear <span class="string">all</span>
@@ -254,9 +254,9 @@ ma.plotMeanMSD(gca, true)
 ma.fitMeanMSD
 </pre><pre class="codeoutput">Computing MSD of 300 tracks... Done.
 Estimating D through linear weighted fit of the mean MSD curve.
-D = 2.259e-02 with 95% confidence interval [ 2.199e-02 - 2.319e-02 ].
-Goodness of fit: R&sup2; = 0.991.
-</pre><img vspace="5" hspace="5" src="MSDTuto_drift_05.png" alt=""> <p>This is completely wrong.</p><p>So this method is a little bit like a toy: it works only for cases that are seldom seen experimentally. You would need to have the same particles detected at the same times, with no detection missing.</p><h2>Drift correction using velocity correlation.<a name="20"></a></h2><p>The following method corrects these problems, using a simple observation. Since we are dealing with homogeneous drift, the displacement due to the drift will be the same for all particles at any given point. On top of this common displacement, each particle will undergo a displacement due to the Brownian motion, which we are trying to sample. If we write this with equations, we get for the velocity if the |i|th particle:</p><p><img src="MSDTuto_drift_eq64240.png" alt="$$ \textbf{v}_i(t) = \textbf{v}_\textrm{drift}(t) + \textbf{v}_{i,&#xA;\textrm{diffusive}}(t) $$"></p><p>If we now average over all particles at fixed time <i><tt>t</tt></i>:</p><p><img src="MSDTuto_drift_eq69327.png" alt="$$ \left< \textbf{v} \right&gt;(t) = \frac{1}{N(t)} \sum_i \left(&#xA;\textbf{v}_\textrm{drift} + \textbf{v}_{i,\textrm{diffusive}} \right) $$"></p><p>But the diffusive movement of the particles are uncorrelated from one particle to another. If the particles are in a great enough number, we can therefore assume that the second term in the sum will cancel to 0. Since the first term in the sum does not depend on <i><tt>i</tt></i>, we can write:</p><p><img src="MSDTuto_drift_eq34588.png" alt="$$ \textbf{v}_\textrm{drift}(t) = \left< \textbf{v} \right&gt;(t) $$"></p><p>To infer the <i>displacement</i> due to the drift, we simply integrate this velocity over time:</p><p><img src="MSDTuto_drift_eq10222.png" alt="$$ \textbf{x}_\textrm{drift}(t) = \int_0^t \left< \textbf{v} \right&gt;(t')&#xA;\textrm{d}t' $$"></p><p>Let's see how it works in practice:</p><pre class="codeinput">ma = ma.computeDrift(<span class="string">'velocity'</span>);
+D = 1.878e-02 with 95% confidence interval [ 1.744e-02 - 2.012e-02 ].
+Goodness of fit: R&sup2; = 0.936.
+</pre><img vspace="5" hspace="5" src="MSDTuto_drift_05.png" alt=""> <p>This is completely wrong.</p><p>So this method is a little bit like a toy: it works only for cases that are seldom seen experimentally. You would need to have the same particles detected at the same times, with no detection missing.</p><h2>Drift correction using velocity correlation.<a name="20"></a></h2><p>The following method corrects these problems, using a simple observation. Since we are dealing with homogeneous drift, the displacement due to the drift will be the same for all particles at any given point. On top of this common displacement, each particle will undergo a displacement due to the Brownian motion, which we are trying to sample. If we write this with equations, we get for the velocity if the |i|th particle:</p><p><img src="MSDTuto_drift_eq17082614426460975344.png" alt="$$ \textbf{v}_i(t) = \textbf{v}_\textrm{drift}(t) + \textbf{v}_{i,&#xA;\textrm{diffusive}}(t) $$"></p><p>If we now average over all particles at fixed time <i><tt>t</tt></i>:</p><p><img src="MSDTuto_drift_eq16052669337217725454.png" alt="$$ \left< \textbf{v} \right&gt;(t) = \frac{1}{N(t)} \sum_i \left(&#xA;\textbf{v}_\textrm{drift} + \textbf{v}_{i,\textrm{diffusive}} \right) $$"></p><p>But the diffusive movement of the particles are uncorrelated from one particle to another. If the particles are in a great enough number, we can therefore assume that the second term in the sum will cancel to 0. Since the first term in the sum does not depend on <i><tt>i</tt></i>, we can write:</p><p><img src="MSDTuto_drift_eq16395324057808380963.png" alt="$$ \textbf{v}_\textrm{drift}(t) = \left< \textbf{v} \right&gt;(t) $$"></p><p>To infer the <i>displacement</i> due to the drift, we simply integrate this velocity over time:</p><p><img src="MSDTuto_drift_eq11285100521292673230.png" alt="$$ \textbf{x}_\textrm{drift}(t) = \int_0^t \left< \textbf{v} \right&gt;(t')&#xA;\textrm{d}t' $$"></p><p>Let's see how it works in practice:</p><pre class="codeinput">ma = ma.computeDrift(<span class="string">'velocity'</span>);
 figure
 ma.plotDrift
 ma.labelPlotTracks
@@ -265,7 +265,7 @@ std(error) <span class="comment">% &micro;m</span>
 </pre><pre class="codeoutput">
 ans =
 
-    0.0053    0.0077
+    0.0021    0.0026
 
 </pre><p>We make a localization mistake of about 20 nm each time. The problem is that this is of the same order of magnitude than the typical particle movement <tt>k</tt>. We must therefore expect still some discrepancy in the numerical estimates. Still:</p><pre class="codeinput">ma = ma.computeMSD;
 figure
@@ -273,9 +273,9 @@ ma.plotMeanMSD(gca, true)
 ma.fitMeanMSD
 </pre><pre class="codeoutput">Computing MSD of 300 tracks... Done.
 Estimating D through linear weighted fit of the mean MSD curve.
-D = 9.623e-04 with 95% confidence interval [ 9.590e-04 - 9.655e-04 ].
+D = 9.808e-04 with 95% confidence interval [ 9.775e-04 - 9.840e-04 ].
 Goodness of fit: R&sup2; = 1.000.
-</pre><img vspace="5" hspace="5" src="MSDTuto_drift_07.png" alt=""> <p>The results are well acceptable. I have found out that this method is relatively robust, as soon as you have enough particles to average. So on top of sampling their motion on short time scales for long durations, we must also acquire plenty of them at once, to be able to correct well for drift.</p><h2>Non-homogeneous drift.<a name="24"></a></h2><p>When you image live cells in fluorescence microscopy, a high illumination power will damage them. Most of the time they will shrink, which will create a drift of the particles towards the center of the cell. This drift is non-homogeneous: each particle has a difference drift velocity vector. I have no good way to deal with this case, for this drift is not distinguishable from a directed movement of the particles towards the center of the cell. So to the list of requirements for a proper image acquisition needed for MSD analysis, we must also add imaging conditions that are non phototoxic, that is: low light.</p><p>Such is the scientist life....</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="MSDTuto_drift_07.png" alt=""> <p>The results are well acceptable. I have found out that this method is relatively robust, as soon as you have enough particles to average. So on top of sampling their motion on short time scales for long durations, we must also acquire plenty of them at once, to be able to correct well for drift.</p><h2>Non-homogeneous drift.<a name="24"></a></h2><p>When you image live cells in fluorescence microscopy, a high illumination power will damage them. Most of the time they will shrink, which will create a drift of the particles towards the center of the cell. This drift is non-homogeneous: each particle has a difference drift velocity vector. I have no good way to deal with this case, for this drift is not distinguishable from a directed movement of the particles towards the center of the cell. So to the list of requirements for a proper image acquisition needed for MSD analysis, we must also add imaging conditions that are non phototoxic, that is: low light.</p><p>Such is the scientist life....</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Correcting for drift.
 
@@ -320,7 +320,7 @@ SIZE = 10; % µm
 
 D  = 1e-3; % µm^2/s
 dT = 0.03; % s
-k = sqrt(N_DIM * D * dT);
+k = sqrt(2 * D * dT);
 
 % Drift parameters: a circle moving forward
 drift_time = (0 : N_TIME_STEPS-1)' * dT;
