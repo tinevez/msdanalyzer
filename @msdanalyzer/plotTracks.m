@@ -52,6 +52,7 @@ if obj.n_dim == 2
         
         index = indices(i);
         track = obj.tracks{index};
+        trackName = sprintf('Track %d', index );
         
         x = track(:,2);
         y = track(:,3);
@@ -68,7 +69,8 @@ if obj.n_dim == 2
         end
         
         hps(i) =  plot(ha, x, y, ...
-            'Color', colors(i,:));
+            'Color', colors(i,:), ...
+            'DisplayName', trackName );
         
     end
     
@@ -78,6 +80,7 @@ else
         
         index = indices(i);
         track = obj.tracks{index};
+        trackName = sprintf('Track %d', index );
         
         x = track(:,2);
         y = track(:,3);
@@ -97,7 +100,8 @@ else
         end
         
         hps(i) =  plot3(ha, x, y, z, ...
-            'Color', colors(i,:));
+            'Color', colors(i,:), ...
+            'DisplayName', trackName );
         
     end
     
