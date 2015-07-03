@@ -35,6 +35,10 @@ n_tracks = numel(indices);
 all_delays = cell(n_tracks, 1);
 for i = 1 : n_tracks
     index = indices(i);
+    
+    if isempty( obj.msd{index} )
+        continue
+    end
     all_delays{i} = obj.msd{index}(:,1);
 end
 delays = unique( vertcat( all_delays{:} ) );
@@ -48,6 +52,9 @@ sum_weighted_mean   = zeros(n_delays, 1);
 for i = 1 : n_tracks
     
     index = indices(i);
+    if isempty( obj.msd{index} )
+        continue
+    end
     
     t = obj.msd{index}(:,1);
     m = obj.msd{index}(:,2);
@@ -77,6 +84,9 @@ sum_square_weight     = zeros(n_delays, 1);
 for i = 1 : n_tracks
     
     index = indices(i);
+    if isempty( obj.msd{index} )
+        continue
+    end
     
     t = obj.msd{index}(:,1);
     m = obj.msd{index}(:,2);

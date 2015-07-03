@@ -49,6 +49,10 @@ for i = 1 : n_spots
     index = indices(i);
     
     msd_spot = obj.msd{index};
+    if isempty( msd_spot )
+        continue
+    end
+    
     t = msd_spot(:,1);
     m = msd_spot(:,2);
     if errorbar
