@@ -53,9 +53,9 @@ else
     hps = NaN(n_spots, 1);
 end
 
-for i = 1 : n_spots
+for idx = 1 : n_spots
     
-    index = indices(i);
+    index = indices(idx);
     
     msd_spot = obj.msd{index};
     if isempty( msd_spot )
@@ -73,11 +73,11 @@ for i = 1 : n_spots
     end
     if errorbar
         s = msd_spot(:,3);
-        hps(i) = msdanalyzer.errorShade(ha, t, m, s, colors(i,:), true);
-        set( hps(i), 'DisplayName', trackName );
+        hps(idx) = msdanalyzer.errorShade(ha, t, m, s, colors(idx,:), true);
+        set( hps(idx), 'DisplayName', trackName );
     else
-        hps(i) = plot(ha, t(~isnan(m)), m(~isnan(m)), ...
-            'Color', colors(i,:), ...
+        hps(idx) = plot(ha, t(~isnan(m)), m(~isnan(m)), ...
+            'Color', colors(idx,:), ...
             'DisplayName', trackName); %, 'Marker','+','MarkerSize',2
     end
     

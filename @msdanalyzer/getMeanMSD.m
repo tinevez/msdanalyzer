@@ -60,7 +60,7 @@ for i = 1 : n_tracks
     m = obj.msd{index}(:,2);
     n = obj.msd{index}(:,4);
     
-    % Do not tak NaNs
+    % Do not take NaNs
     valid = ~isnan(m);
     t = t(valid);
     m = m(valid);
@@ -92,7 +92,7 @@ for i = 1 : n_tracks
     m = obj.msd{index}(:,2);
     n = obj.msd{index}(:,4);
     
-    % Do not tak NaNs
+    % Do not take NaNs
     valid = ~isnan(m);
     t = t(valid);
     m = m(valid);
