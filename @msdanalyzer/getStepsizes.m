@@ -37,7 +37,7 @@ for i = 1 : n_tracks
         tdrift = obj.drift(:, 1);
         xdrift = obj.drift(:, 2:end);
         % Determine target delay index in bulk
-        [~, index_in_drift_time, index_in_track_time] = intersect(tdrift, t);
+        [~, index_in_drift_time, index_in_track_time] = intersect(round(tdrift.*10^9), round(t.*10^9)); % Fixed bug: precision
         % Keep only track times that can be corrected.
         XY = XY(index_in_track_time, :);
         t = t(index_in_track_time);
