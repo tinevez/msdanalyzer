@@ -1,4 +1,4 @@
-function obj = fitLogLogMSD(obj, clip_factor)
+function obj = fitLogLogMSD(obj, clip_factor,silent)
 %%FITLOGLOGMSD Fit the log-log MSD to determine behavior.
 %
 % obj = obj.fitLogLogMSD fits each MSD curve stored in this object
@@ -26,18 +26,22 @@ function obj = fitLogLogMSD(obj, clip_factor)
 if nargin < 2
     clip_factor = 0.25;
 end
-
+if nargin<3
+    silent=false;
+end
 if ~obj.msd_valid
     obj = obj.computeMSD;
 end
 n_spots = numel(obj.msd);
 
-if clip_factor < 1
-    fprintf('Fitting %d curves of log(MSD) = f(log(t)), taking only the first %d%% of each curve... ',...
-        n_spots, ceil(100 * clip_factor) )
-else
-    fprintf('Fitting %d curves of log(MSD) = f(log(t)), taking only the first %d points of each curve... ',...
-        n_spots, round(clip_factor) )
+if ~silent
+    if clip_factor < 1
+        fprintf('Fitting %d curves of log(MSD) = f(log(t)), taking only the first %d%% of each curve... ',...
+            n_spots, ceil(100 * clip_factor) )
+    else
+        fprintf('Fitting %d curves of log(MSD) = f(log(t)), taking only the first %d points of each curve... ',...
+            n_spots, round(clip_factor) )
+    end
 end
 
 alpha = NaN(n_spots, 1);
@@ -45,10 +49,13 @@ gamma = NaN(n_spots, 1);
 r2fit = NaN(n_spots, 1);
 ft = fittype('poly1');
 
-fprintf('%4d/%4d', 0, n_spots);
+if ~silent
+    fprintf('%4d/%4d', 0, n_spots);
+end
 for i_spot = 1 : n_spots
-    
-    fprintf('\b\b\b\b\b\b\b\b\b%4d/%4d', i_spot, n_spots);
+    if ~silent
+        fprintf('\b\b\b\b\b\b\b\b\b%4d/%4d', i_spot, n_spots);
+    end
     
     msd_spot = obj.msd{i_spot};
     
@@ -96,7 +103,9 @@ for i_spot = 1 : n_spots
     r2fit(i_spot) = gof.adjrsquare;
     
 end
-fprintf('\b\b\b\b\b\b\b\b\bDone.\n')
+if ~silent
+    fprintf('\b\b\b\b\b\b\b\b\bDone.\n')
+end
 
 obj.loglogfit = struct(...
     'alpha', alpha, ...
