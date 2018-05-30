@@ -56,12 +56,13 @@ ft = fittype('poly1');
 if ~silent
     fprintf('%4d/%4d', 0, n_spots);
 end
-for i_spot = 1 : n_spots
+msd=obj.msd;
+parfor i_spot = 1 : n_spots
     if ~silent
         fprintf('\b\b\b\b\b\b\b\b\b%4d/%4d', i_spot, n_spots);
     end
     
-    msd_spot = obj.msd{i_spot};
+    msd_spot = msd{i_spot};
     
     t = msd_spot(:,1);
     y = msd_spot(:,2);
@@ -100,7 +101,11 @@ for i_spot = 1 : n_spots
         continue
     end
     if fitError
-        [p,resnorm] = fitMSDlogAlphaError(xl,yl,tE);
+        try
+            [p,resnorm] = fitMSDlogAlphaError(t,y,tE,fitError);
+        catch
+            p=nan(1,3); resnorm=nan;
+        end
         alpha(i_spot) = p(2);
         gamma(i_spot) = 4*p(1); % gamma=4D
         r2fit(i_spot) = resnorm;
@@ -168,9 +173,14 @@ end
 fun = @(p)(log(msd)-log(formula(p,t))).^2;
 fitopts.FunctionTolerance=10^-16;
 fitopts.Display='off';
-p0 = [0.0004, 0.4, 0.02];
+p0 = [1, 0.4, 0.02];
+try
+    [~,idx]=min(abs(t-1));
+    p0(1)=msd(idx)/2;
+catch
+end
 lb =  [0    , 0  , 0   ];
-ub =  [0.001 , 2  , 0.1 ];
+ub =  [10^10 , 2  , 0.1 ];
 if fitError==1
     p0=p0(1:2);lb=lb(1:2);ub=ub(1:2);
 end
