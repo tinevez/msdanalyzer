@@ -71,6 +71,10 @@ for idx = 1 : n_spots
         t = msd_spot(:,1);
         m = msd_spot(:,2);
     end
+    if ~sum(~isnan(m))
+        warning(['No msd for spot ' num2str(idx)])
+        continue
+    end
     if errorbar
         s = msd_spot(:,3);
         hps(idx) = msdanalyzer.errorShade(ha, t, m, s, colors(idx,:), true);
