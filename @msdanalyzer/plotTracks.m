@@ -62,7 +62,7 @@ if obj.n_dim == 2
             xdrift = obj.drift(:, 2);
             ydrift = obj.drift(:, 3);
             t = track(:,1);
-            [~, index_in_drift_time, ~] = intersect(tdrift, t);
+            [~, index_in_drift_time, ~] = intersect(round(tdrift.*10^12), round(t.*10^12)); % Fixed bug: precision
             % Subtract drift position to track position
             x = x - xdrift(index_in_drift_time);
             y = y - ydrift(index_in_drift_time);

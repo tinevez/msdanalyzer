@@ -1,4 +1,4 @@
-function obj = computeMSD(obj, indices)
+function obj = computeMSD(obj, indices,silent)
 %%COMPUTEMSD Compute the mean-squared-displacement for this object.
 %
 % obj = obj.computeMSD computes the MSD for all the tracks stored
@@ -20,10 +20,14 @@ function obj = computeMSD(obj, indices)
 if nargin < 2 || isempty(indices)
     indices = 1 : numel(obj.tracks);
 end
+if nargin < 3 || isempty(silent)
+    silent = false;
+end
 
 n_tracks = numel(indices);
-fprintf('Computing MSD of %d tracks... ', n_tracks);
-
+if ~silent
+    fprintf('Computing MSD of %d tracks... ', n_tracks);
+end
 % First, find all possible delays in time vectors.
 % Time can be arbitrary spaced, with frames missings,
 % non-uniform sampling, etc... so we have to do this clean.
@@ -36,13 +40,13 @@ if ~isempty(obj.drift)
     tdrift = obj.drift(:,1);
     xdrift = obj.drift(:, 2:end);
 end
-
-fprintf('%4d/%4d', 0, n_tracks);
-
+if ~silent
+    fprintf('%4d/%4d', 0, n_tracks);
+end
 for i = 1 : n_tracks
-    
-    fprintf('\b\b\b\b\b\b\b\b\b%4d/%4d', i, n_tracks);
-    
+    if ~silent
+        fprintf('\b\b\b\b\b\b\b\b\b%4d/%4d', i, n_tracks);
+    end
     mean_msd    = zeros(n_delays, 1);
     M2_msd2     = zeros(n_delays, 1);
     n_msd       = zeros(n_delays, 1);
@@ -101,8 +105,9 @@ for i = 1 : n_tracks
     obj.msd{index} = [ delays mean_msd std_msd n_msd ];
     
 end
-fprintf('\b\b\b\b\b\b\b\b\bDone.\n')
-
+if ~silent
+    fprintf('\b\b\b\b\b\b\b\b\bDone.\n')
+end
 obj.msd_valid = true;
 
 end

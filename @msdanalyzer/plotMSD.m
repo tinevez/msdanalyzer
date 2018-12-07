@@ -1,4 +1,4 @@
-function varargout = plotMSD(obj, ha, indices, errorbar)
+function varargout = plotMSD(obj, ha, indices, errorbar, hideZero)
 %% PLOTMSD Plot the mean square displacement curves.
 %
 % obj.plotMSD plots the MSD curves in the current axes.
@@ -15,6 +15,12 @@ function varargout = plotMSD(obj, ha, indices, errorbar)
 % plotted with error bars (equal to standard deviation). It is
 % false by default.
 %
+% obj.plotMSD(ha, indices, errorbar,hideZero), where hideZero is a
+% boolean flag, allows to specify whether a the point corresponding to
+% (0,0) should be included in the plotted tracks. Hiding them can be useful
+% in case when plotting tracks from pooled datasets with different time
+% intervals. Default is false, the (0,0) points are plotted.
+%
 % hps =  obj.plotMSD(...) returns the handle array for the
 % lines generated.
 %
@@ -25,14 +31,17 @@ if ~obj.msd_valid
     obj = obj.computeMSD;
 end
 
-if nargin < 2
+if nargin < 2 || isempty(ha)
     ha = gca;
 end
 if nargin < 3 || isempty(indices)
     indices = 1 : numel(obj.msd);
 end
-if nargin < 4
+if nargin < 4 || isempty(errorbar)
     errorbar = false;
+end
+if nargin < 5
+    hideZero = false;
 end
 
 n_spots = numel(indices);
@@ -44,9 +53,9 @@ else
     hps = NaN(n_spots, 1);
 end
 
-for i = 1 : n_spots
+for idx = 1 : n_spots
     
-    index = indices(i);
+    index = indices(idx);
     
     msd_spot = obj.msd{index};
     if isempty( msd_spot )
@@ -55,16 +64,25 @@ for i = 1 : n_spots
     
     trackName = sprintf('Track %d', index );
     
-    t = msd_spot(:,1);
-    m = msd_spot(:,2);
+    if hideZero && isequal(msd_spot(1,1:2), [0 0])
+        t = msd_spot(2:end,1);
+        m = msd_spot(2:end,2);
+    else
+        t = msd_spot(:,1);
+        m = msd_spot(:,2);
+    end
+    if ~sum(~isnan(m))
+        warning(['No msd for spot ' num2str(idx)])
+        continue
+    end
     if errorbar
         s = msd_spot(:,3);
-        hps(i) = msdanalyzer.errorShade(ha, t, m, s, colors(i,:), true);
-        set( hps(i), 'DisplayName', trackName );
+        hps(idx) = msdanalyzer.errorShade(ha, t, m, s, colors(idx,:), true);
+        set( hps(idx), 'DisplayName', trackName );
     else
-        hps(i) = plot(ha, t, m, ...
-            'Color', colors(i,:), ...
-            'DisplayName', trackName );
+        hps(idx) = plot(ha, t(~isnan(m)), m(~isnan(m)), ...
+            'Color', colors(idx,:), ...
+            'DisplayName', trackName); %, 'Marker','+','MarkerSize',2
     end
     
 end
