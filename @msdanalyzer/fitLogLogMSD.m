@@ -32,6 +32,10 @@ end
 if nargin<3
     silent=false;
 end
+if nargin<4
+    fitError=0;
+    tE=1;
+end
 if ~obj.msd_valid
     obj = obj.computeMSD;
 end
@@ -107,7 +111,7 @@ parfor i_spot = 1 : n_spots
             p=nan(1,3); resnorm=nan;
         end
         alpha(i_spot) = p(2);
-        gamma(i_spot) = 4*p(1); % gamma=4D
+        gamma(i_spot) = 4*p(1); % gamma=4D % Consistent with line 119
         r2fit(i_spot) = resnorm;
         if fitError>1
             sigma(i_spot) = p(3);
