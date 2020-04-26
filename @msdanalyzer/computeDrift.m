@@ -62,9 +62,15 @@ switch lower(method)
                 'Drift must be of size N x (nDim+1) with [ T0 X0 Y0 ... ] etc...');
         end
         
-        uninterpolated_time = extra(:, 1);
+        uninterpolated_time = msdanalyzer.roundn( extra(:, 1) , msdanalyzer.TOLERANCE);
         uninterpolated_drift = extra(:, 2:end);
-        if min(uninterpolated_time) > min(time) || max(uninterpolated_time) < max(time)
+        
+        mit1 = msdanalyzer.roundn( min(uninterpolated_time), msdanalyzer.TOLERANCE);
+        mt1 = msdanalyzer.roundn( min(time), msdanalyzer.TOLERANCE);
+        mit2 = msdanalyzer.roundn( max(uninterpolated_time), msdanalyzer.TOLERANCE);
+        mt2 = msdanalyzer.roundn( max(time), msdanalyzer.TOLERANCE);
+        
+        if  mit1 > mt1 || mit2 < mt2
             error('msdanalyzer:computeDrift:BadTimeVector', ...
                 'For manual drift correction, time vector must cover all time vector from all tracks.');
         end
