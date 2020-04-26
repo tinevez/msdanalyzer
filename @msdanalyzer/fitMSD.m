@@ -43,10 +43,10 @@ b = NaN(n_spots, 1);
 r2fit = NaN(n_spots, 1);
 ft = fittype('poly1');
 
-fprintf('%4d/%4d', 0, n_spots);
+fprintf('%5d/%5d', 0, n_spots);
 for i_spot = 1 : n_spots
     
-    fprintf('\b\b\b\b\b\b\b\b\b%4d/%4d', i_spot, n_spots);
+    fprintf('\b\b\b\b\b\b\b\b\b\b\b%5d/%5d', i_spot, n_spots);
     
     msd_spot = obj.msd{i_spot};
     
