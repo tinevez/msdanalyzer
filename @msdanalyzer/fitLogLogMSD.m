@@ -47,10 +47,12 @@ alpha_upperci = NaN(n_spots, 1);
 alpha_lowerci = NaN(n_spots, 1);
 ft = fittype('poly1');
 
-fprintf('%5d/%5d', 0, n_spots);
+[numSpec,bkspSpec] = makeformatSpec( max(5, ceil(log10(n_tracks))) );
+fprintf(numSpec, 0, n_tracks);
+updateSpec = [bkspSpec numSpec];
 for i_spot = 1 : n_spots
     
-    fprintf('\b\b\b\b\b\b\b\b\b\b\b%5d/%5d', i_spot, n_spots);
+    fprintf(updateSpec, i_spot, n_spots);
     
     msd_spot = obj.msd{i_spot};
     
@@ -102,7 +104,7 @@ for i_spot = 1 : n_spots
     alpha_upperci(i_spot) = ci(2, 1);
     
 end
-fprintf('\b\b\b\b\b\b\b\b\b\b\bDone.\n')
+fprintf([bkspSpec 'Done.\n'])
 
 obj.loglogfit = struct(...
     'alpha', alpha, ...

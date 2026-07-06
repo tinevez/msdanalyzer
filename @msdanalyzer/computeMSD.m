@@ -37,11 +37,13 @@ if ~isempty(obj.drift)
     xdrift = obj.drift(:, 2:end);
 end
 
-fprintf('%5d/%5d', 0, n_tracks);
+[numSpec,bkspSpec] = makeformatSpec( max(5, ceil(log10(n_tracks))) );
+fprintf(numSpec, 0, n_tracks);
+updateSpec = [bkspSpec numSpec];
 
 for i = 1 : n_tracks
     
-    fprintf('\b\b\b\b\b\b\b\b\b\b\b%5d/%5d', i, n_tracks);
+    fprintf(updateSpec, i, n_tracks);
     
     mean_msd    = zeros(n_delays, 1);
     M2_msd2     = zeros(n_delays, 1);
@@ -107,7 +109,7 @@ for i = 1 : n_tracks
     obj.msd{index} = [ delays mean_msd std_msd n_msd ];
     
 end
-fprintf('\b\b\b\b\b\b\b\b\bDone.\n')
+fprintf([bkspSpec 'Done.\n'])
 
 obj.msd_valid = true;
 
