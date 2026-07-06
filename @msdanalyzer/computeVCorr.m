@@ -31,9 +31,11 @@ n_delays = numel(delays);
 n_tracks = numel(velocities);
 
 fprintf('Computing velocity autocorrelation of %d tracks... ', n_tracks);
-fprintf('%4d/%4d', 0, n_tracks);
+[numSpec,bkspSpec] = makeformatSpec( max(4, ceil(log10(n_tracks))) );
+fprintf(numSpec, 0, n_tracks);
+updateSpec = [bkspSpec numSpec];
 for i = 1 : n_tracks
-    fprintf('\b\b\b\b\b\b\b\b\b%4d/%4d', i, n_tracks);
+    fprintf(updateSpec, i, n_tracks);
     
     % Holder for mean, std calculations
     sum_vcorr     = zeros(n_delays-1, 1);
@@ -82,7 +84,7 @@ for i = 1 : n_tracks
     obj.vcorr{index} = vcorrelation;
     
 end
-fprintf('\b\b\b\b\b\b\b\b\bDone.\n')
+fprintf([bkspSpec 'Done.\n'])
 
 obj.vcorr_valid = true;
 
